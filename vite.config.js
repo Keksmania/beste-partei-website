@@ -14,7 +14,7 @@ export default defineConfig({
         }),
         laravel({
             input: [
-                'resources/css/app.css',
+                'resources/scss/app.scss',
                 'resources/js/app.js',
             ],
             refresh: true,
@@ -23,7 +23,15 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': '/resources/js',
-            'vue': 'vue/dist/vue.esm-bundler.js'
+            'vue': 'vue/dist/vue.esm-bundler.js',
+            },
+    },
+   css: {
+    preprocessorOptions: {
+        scss: {
+            additionalData: ``, // Remove the Bootstrap import here
         },
     },
+},
+
 });
