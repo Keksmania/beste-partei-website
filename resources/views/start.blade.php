@@ -5,16 +5,13 @@
 
 @section('content')
     <div style="text-align: center">
-        <p  class="h1"> Beste-Partei (working title) </p>
+        <p  class="h1"> Studentische Politik-Revolution </p>
        <div style="justify-content: center; display:flex; margin-top: 10px">
             <div>
-               <p>Hallo liebe Parteimitglieder,</p>
-                <p>genießt die ersten Wochen unserer Partei!</p>
-                <br>
-                <p>Euer (zukünftiger) Vorstand</p>
+               <p>Aktuell ist diese Seite noch im Aufbau.</p>
+
             </div>
         </div>
-       <test></test>
     </div>
   
 @endsection

@@ -1,5 +1,5 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="#">Beste Partei</a>
+<nav class="navbar navbar-expand-lg navbar-light bg-primary">
+    <a class="navbar-brand" href="/">Studentische Politik-Revolution</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -30,8 +30,9 @@
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                     <li><a class="dropdown-item" href="#">Geschichte</a></li>
                     <li><a class="dropdown-item" href="#">Kontakt</a></li>
-                    <li><a class="dropdown-item" href="#">Impressum</a></li>
+                    <li><a class="dropdown-item" href="{{ url('/Impressum') }}">Impressum</a></li>
                 </ul> </li>
+    	   <!-- <a href="/Login" class="nav-link"> Login </a> -->
             <!-- Add more items here -->
         </ul>
     </div>
