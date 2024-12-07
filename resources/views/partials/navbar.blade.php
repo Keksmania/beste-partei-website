@@ -10,7 +10,7 @@
                     Inhalte
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <li><a class="dropdown-item" href="#">Parteiprogramm</a></li>
+                    <li><a class="dropdown-item" href="/Partei-Programm">Parteiprogramm</a></li>
                 </ul>
                 
             </li>
@@ -19,8 +19,8 @@
                     Orga
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <li><a class="dropdown-item" href="#">zukünftige Termine</a></li>
-                    <li><a class="dropdown-item" href="#">vergangene Termine</a></li>
+                    <li><a class="dropdown-item" href="{{ url('/Termine?zukunft=true') }}">zukünftige Termine</a></li>
+                    <li><a class="dropdown-item" href="{{ url('/Termine?zukunft=false') }}">vergangene Termine</a></li>
               
                 </ul> </li>
                 <li class="nav-item dropdown">
@@ -28,11 +28,11 @@
                     Über uns
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                    <li><a class="dropdown-item" href="#">Geschichte</a></li>
-                    <li><a class="dropdown-item" href="#">Kontakt</a></li>
+                    <li><a class="dropdown-item" href="{{ url('/Geschichte') }}">Geschichte</a></li>
+                    <li><a class="dropdown-item" href="{{ url('/Kontakt') }}">Kontakt</a></li>
                     <li><a class="dropdown-item" href="{{ url('/Impressum') }}">Impressum</a></li>
                 </ul> </li>
-    	   <!-- <a href="/Login" class="nav-link"> Login </a> -->
+    	   <a href="/Login" class="nav-link"> Login </a> 
             <!-- Add more items here -->
         </ul>
     </div>

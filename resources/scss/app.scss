@@ -1,59 +1,88 @@
 /* resources/scss/app.scss */
 
-
 // Import Bootstrap SCSS
 @use 'bootstrap/scss/bootstrap' as *;
 
-
 .nav-link {
-    color:white;
+  color: white;
 }
 
-.navbar-brand
-{
-    color:white;
+.navbar-brand {
+  color: white;
 }
-.navbar-toggler-icon{
-    --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+
+.navbar-toggler-icon {
+  --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
 .dropdown-menu {
-
-    --bs-dropdown-bg: rgba(var(--bs-primary-rgb));
-    --bs-dropdown-link-hover-bg: #93c9ff;
+  --bs-dropdown-bg: rgba(var(--bs-primary-rgb));
+  --bs-dropdown-link-hover-bg: #93c9ff;
 }
 
 .dropdown-item {
-    color: #ffffff;
+  color: #ffffff;
 }
 
-
-// Define the slide-down animation
+// Keyframe animation
 @keyframes slideDown {
-    0% {
-      transform: translateY(-100%);
-      opacity: 0;
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.centerblock {
+  display: block;
+  max-width: 50%;
+  text-align: center;
+}
+
+// Parent container styles
+.parent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50%;
+  width: 100%;
+  overflow: hidden;
+}
+
+// Animated child element
+.child {
+  animation: slideDown 1s ease-out forwards;
+  opacity: 0;
+  padding: 20px;
+}
+
+.event-container{
+  transition: transform 0.5s ease;
+  display:flex;
+  flex-direction: row;
+  text-align: center;
+  width: 100%;
+  .event-box{
+    margin:10px;
+    min-width: 15em;
+    min-height: 15em;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+   
+    img{
+      max-width: 15em;
+      max-height: 15em;
+      width: 100%;
+      height: auto;
     }
-    100% {
-      transform: translateY(0); // End at its natural flex-centered position
-      opacity: 1;
-    }
   }
+
+    
+}
   
-  // Parent container styles
-  .parent {
-    display: flex; // Enable flexbox
-    justify-content: center; // Center horizontally
-    align-items: center; // Center vertically
-    height: 50%; // Full viewport height for demo
-    width: 100%; // Full width
-    overflow: hidden; // Prevent overflow during animation
-  }
-  
-  // Animated child element
-  .child {
-    animation: slideDown 1s ease-out forwards; // 1 second slide-down animation
-    opacity: 0; // Initially hidden
-    padding: 20px;
-  }
-  
+
+

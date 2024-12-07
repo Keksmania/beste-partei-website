@@ -1,5 +1,6 @@
 <template>
-    <form @submit.prevent="submitForm">
+  <div  style="width: 100%; display: flex; justify-content: center;">
+    <form @submit.prevent="submitForm" style="width: 30%;">
       <input type="hidden" name="_token" :value="csrfToken" />
       <div class="mb-3">
         <label for="email" class="form-label">Email address</label>
@@ -11,6 +12,7 @@
       </div>
       <button type="submit" class="btn btn-primary w-100">Login</button>
     </form>
+  </div>
   </template>
   
   <script setup>
