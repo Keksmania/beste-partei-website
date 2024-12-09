@@ -3,7 +3,7 @@
       <div class="event-container" :style="{ transform: `translateX(${-position}em)` }">   
         <a v-for="event in events" :key="event.id" class="event-box" :href="'/post/'+event.id" >
           <div class="event-image"><img :src="event.imageSrc" alt="Image"></div>
-          <div class="event-name"><h5>Box {{ event.name }}</h5></div>
+          <div class="event-name"><h5> {{ event.name }}</h5></div>
 
        </a>
        </div>
