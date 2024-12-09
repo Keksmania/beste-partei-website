@@ -1,5 +1,5 @@
 <template>
-  <div  style="width: 100%; display: flex; justify-content: center;">
+  <div style="width: 100%; display: flex; justify-content: center;">
     <form @submit.prevent="submitForm" style="width: 30%;">
       <input type="hidden" name="_token" :value="csrfToken" />
       <div class="mb-3">
@@ -11,36 +11,55 @@
         <input type="password" name="password" class="form-control" id="password" v-model="password" placeholder="Enter your password" required>
       </div>
       <button type="submit" class="btn btn-primary w-100">Login</button>
+      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     </form>
   </div>
-  </template>
-  
-  <script setup>
-  import { ref } from 'vue';
-  import axios from 'axios';
-  
-  // Reactive state
-  const csrfToken = ref(document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-  const email = ref('');
-  const password = ref('');
-  
-  // Submit form function
-  const submitForm = async () => {
-    try {
-      // Send POST request with Axios
-      const response = await axios.post('/Login', {
-        email: email.value,
-        password: password.value,
-        _token: csrfToken.value, // Include CSRF token
-      });
-  
-      // Handle response (success)
-      console.log('Login successful:', response.data);
-  
-    } catch (error) {
-      // Handle error
-      console.error('Login failed:', error.response ? error.response.data : error.message);
-    }
-  };
-  </script>
-  
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import axios from 'axios';
+
+// Reactive state
+const csrfToken = ref(document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+const email = ref('');
+const password = ref('');
+const errorMessage = ref('');
+
+// Submit form function
+const submitForm = async () => {
+  try {
+    // Send POST request with Axios
+    const response = await axios.post('/api/login', {
+      email: email.value,
+      password: password.value,
+      _token: csrfToken.value, // Include CSRF token
+    });
+
+    // Handle response (success)
+    console.log('Login successful:', response.data);
+
+    // Redirect to the start page
+    window.location.href = '/';
+  } catch (error) {
+    // Handle error
+    console.error('Login failed:', error.response ? error.response.data.message : error.message);
+    errorMessage.value = error.response ? error.response.data.message : error.message;
+    console.log('Error message set:', errorMessage.value);
+  }
+};
+</script>
+
+<style scoped>
+.error-message {
+  color: red;
+  animation: blinker 1s linear infinite;
+  margin-top: 10px;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+</style>

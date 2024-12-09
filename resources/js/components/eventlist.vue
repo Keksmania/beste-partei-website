@@ -1,14 +1,15 @@
 <template>
-    <div style="display:flex; width: 100%; flex-direction: column;">
+    <div style="display:flex; width: 100%; flex-direction: column;     max-width: 80%;overflow: hidden; margin-left: 10%;">
       <div class="event-container" :style="{ transform: `translateX(${-position}em)` }">   
-        <div v-for="event in events" :key="event.id" class="event-box">
+        <a v-for="event in events" :key="event.id" class="event-box" :href="'/post/'+event.id" >
           <div class="event-image"><img :src="event.imageSrc" alt="Image"></div>
-          <div class="event-name"><h4>Box {{ event.name }}</h4></div>
-        </div>
-      </div>
-      <div style="display: flex; flex-direction: row; justify-content: center;">
-        <button @click="moveLeft" class="m-3">Move Left</button>
-        <button @click="moveRight" class="m-3">Move Right</button>
+          <div class="event-name"><h5>Box {{ event.name }}</h5></div>
+
+       </a>
+       </div>
+      <div style="display: flex; flex-direction: row; justify-content: space-between;  margin-top: -10em;">
+        <button @click="moveLeft" class="m-5 arrow"><</button>
+        <button @click="moveRight" class="m-5 arrow">></button>
       </div>
     </div>
   </template>
@@ -37,19 +38,19 @@
   };
   
   const moveLeft = () => {
-    if (position.value < 15) return; 
-    position.value -= 15;
+    if (position.value < 16) return; 
+    position.value -= 16;
   };
   
   const moveRight = async () => {
     // Prevent moving beyond the left boundary
-    if(position.value/15 < totalEvents.value-3){
-      position.value += 15;
+    if(position.value/16 < totalEvents.value-3){
+      position.value += 16;
     } else {
       return;
     }
 
-    if ((position.value / 15) >= events.value.length - 10) {
+    if ((position.value / 16) >= events.value.length - 10) {
       if (offset.value < totalEvents.value) {
         await fetchEvents();
       }

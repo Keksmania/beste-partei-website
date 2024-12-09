@@ -3,6 +3,7 @@
 @section('title', 'Login')
 
 @section('content')
-<eventlist></eventlist>
-
+<div  class="container mt-5 slide-down child">
+<register></register>
+</div>
 @endsection

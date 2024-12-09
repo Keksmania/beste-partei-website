@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Event;
 
-class EventController extends Controller
+class ContentController extends Controller
 {
 
      /**
@@ -30,6 +30,16 @@ class EventController extends Controller
             'total' => $total,
         ]);
     }
+
+    public function getPost(Request $request){
+        $event = Event::where("id", $request->route("id"))->first(); // Fetch a single event
+        if ($event) {
+            return view("post",  ["event" => $event]); // Pass the event's description to the view
+        } else {
+            abort(403, "Post not found!");
+        }
+    }
+    
 
 
 }
