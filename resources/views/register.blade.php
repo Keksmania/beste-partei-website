@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Login')
+@section('title', 'Register')
 
 @section('content')
 <div  class="container mt-5 slide-down child">

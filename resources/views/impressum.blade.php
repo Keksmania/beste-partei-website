@@ -1,7 +1,7 @@
 <!-- resources/views/start.blade.php -->
 @extends('layouts.app')
 
-@section('title', 'Login')
+@section('title', 'Impressum')
 
 @section('content')
 

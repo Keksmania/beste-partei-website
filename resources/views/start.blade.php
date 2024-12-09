@@ -1,7 +1,7 @@
 <!-- resources/views/start.blade.php -->
 @extends('layouts.app')
 
-@section('title', 'Start Page')
+@section('title', 'Start')
 
 @section('content')
     <div class="background-container" style="text-align: center">
