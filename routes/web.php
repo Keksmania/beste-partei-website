@@ -26,10 +26,10 @@ Route::get('/Partei-Programm', function () {
 
 // Login
 
-Route::middleware('throttle:5|5,1')->group(function () {
-    Route::post('/register', [UserController::class, 'register']);
+//Route::middleware('throttle:5|5,1')->group(function () {
+   // Route::post('/register', [UserController::class, 'register']);
 
-});
+//});
 
 Route::get('/Login', function () {
     return view('login'); 
