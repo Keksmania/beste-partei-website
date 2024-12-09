@@ -33,9 +33,9 @@ Route::get('/Login', function () {
 Route::get('/post/{id}', [ContentController::class, 'getPost']);
 
 
-Route::get('/register', function () {
-    return view('register'); 
-});
+//Route::get('/register', function () {
+ //   return view('register'); 
+//});
 
 Route::post('/register', [UserController::class, 'register']);
 
