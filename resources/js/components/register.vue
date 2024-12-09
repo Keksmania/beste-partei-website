@@ -18,7 +18,8 @@
           <input type="password" name="password_confirmation" class="form-control" id="password_confirmation" v-model="passwordConfirmation" placeholder="Confirm your password" required>
         </div>
         <button type="submit" class="btn btn-primary w-100">Register</button>
-        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+        <p class="error-message">{{ errorMessage }}</p>
+
       </form>
     </div>
   </template>
@@ -53,21 +54,8 @@
     } catch (error) {
       // Handle error
       errorMessage.value = error.response ? error.response.data.message : error.message;
+      setTimeout(function(){errorMessage.value = " "}, 3500)
     }
   };
   </script>
-  
-  <style scoped>
-  .error-message {
-    color: red;
-    animation: blinker 1s linear infinite;
-    margin-top: 10px;
-  }
-  
-  @keyframes blinker {
-    50% {
-      opacity: 0;
-    }
-  }
-  </style>
   

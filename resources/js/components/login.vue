@@ -11,7 +11,8 @@
         <input type="password" name="password" class="form-control" id="password" v-model="password" placeholder="Enter your password" required>
       </div>
       <button type="submit" class="btn btn-primary w-100">Login</button>
-      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+      <p  class="error-message">{{ errorMessage }}</p>
+
     </form>
   </div>
 </template>
@@ -46,20 +47,8 @@ const submitForm = async () => {
     console.error('Login failed:', error.response ? error.response.data.message : error.message);
     errorMessage.value = error.response ? error.response.data.message : error.message;
     console.log('Error message set:', errorMessage.value);
+    setTimeout(function(){errorMessage.value =  " "}, 3500)
   }
 };
 </script>
 
-<style scoped>
-.error-message {
-  color: red;
-  animation: blinker 1s linear infinite;
-  margin-top: 10px;
-}
-
-@keyframes blinker {
-  50% {
-    opacity: 0;
-  }
-}
-</style>

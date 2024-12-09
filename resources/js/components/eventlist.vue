@@ -8,8 +8,8 @@
        </a>
        </div>
       <div style="display: flex; flex-direction: row; justify-content: space-between;  margin-top: -10em;">
-        <button @click="moveLeft" class="m-5 arrow"><</button>
-        <button @click="moveRight" class="m-5 arrow">></button>
+        <button @click="moveLeft" class="mr-5 arrow"><</button>
+        <button @click="moveRight" class="ml-5 arrow">></button>
       </div>
     </div>
   </template>

@@ -25,6 +25,12 @@ Route::get('/Partei-Programm', function () {
 });
 
 // Login
+
+Route::middleware('throttle:5|5,1')->group(function () {
+    Route::post('/register', [UserController::class, 'register']);
+
+});
+
 Route::get('/Login', function () {
     return view('login'); 
 });
@@ -37,13 +43,15 @@ Route::get('/post/{id}', [ContentController::class, 'getPost']);
  //   return view('register'); 
 //});
 
-Route::post('/register', [UserController::class, 'register']);
+
 
 
 // Group routes for API with a prefix
 Route::prefix('api')->group(function () {
     Route::get('/events', [ContentController::class, 'index']);
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::middleware('throttle:10|10,1')->group(function () {
+        Route::post('/login', [AuthController::class, 'login']);
+    });
 
 });
 
