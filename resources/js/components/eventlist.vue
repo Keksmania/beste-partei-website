@@ -1,5 +1,5 @@
 <template>
-    <div style="display:flex; width: 100%; flex-direction: column;     max-width: 80%;overflow: hidden; margin-left: 10%;">
+    <div style="display:flex; width: 100%; flex-direction: column;     min-height: 16em;    max-width: 80%;overflow: hidden; margin-left: 10%;">
       <div class="event-container" :style="{ transform: `translateX(${-position}em)` }">   
         <a v-for="event in events" :key="event.id" class="event-box" :href="'/post/'+event.id" >
           <div class="event-image"><img :src="event.imageSrc" alt="Image"></div>
@@ -7,7 +7,7 @@
 
        </a>
        </div>
-      <div style="display: flex; flex-direction: row; justify-content: space-between;  margin-top: -10em;">
+      <div style="display: flex; flex-direction: row; justify-content: space-between;  margin-top: -8em;">
         <button @click="moveLeft" class="mr-5 arrow"><</button>
         <button @click="moveRight" class="ml-5 arrow">></button>
       </div>
