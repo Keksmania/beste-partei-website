@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-primary">
-    <a  style="margin-left:1em" class="navbar-brand" href="/">Studentische Politik-Revolution</a>
+    <a style="margin-left:1em" class="navbar-brand" href="/">Studentische Politik-Revolution</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -23,6 +23,18 @@
                     <li><a class="dropdown-item" href="{{ url('/Impressum') }}">Impressum</a></li>
                 </ul>
             </li>
+
+            @if(Auth::check())
+                <!-- Verwaltung Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="verwaltungDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Verwaltung
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="verwaltungDropdown">
+                        <li><a class="dropdown-item" href="{{ url('/createpost') }}">Post erstellen</a></li>
+                    </ul>
+                </li>
+            @endif
         </ul>
         <ul class="navbar-nav ms-auto">
             @if(Auth::check())
@@ -31,11 +43,10 @@
                     <div style="margin-right:1em">
                       <button id="logoutButton" class="btn btn-danger btn-sm ms-2">Logout</button>
                     </div>
-                  
                 </li>
             @else
                 <li class="nav-item">
-                    <a href="/Login" class="nav-link">Login</a>
+                    <a href="/login" class="nav-link">Login</a>
                 </li>
             @endif
         </ul>

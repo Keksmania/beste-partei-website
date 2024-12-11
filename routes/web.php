@@ -31,9 +31,9 @@ Route::get('/Partei-Programm', function () {
 
 //});
 
-Route::get('/Login', function () {
+Route::get('/login', function () {
     return view('login'); 
-});
+})->name('login');
 
 // Post content
 Route::get('/post/{id}', [ContentController::class, 'getPost']);
@@ -56,3 +56,12 @@ Route::prefix('api')->group(function () {
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/createpost', function () {
+        return view('createpost'); 
+    });
+    Route::prefix('api')->group(function () {
+       Route::post('/events', [ContentController::class, 'store']);
+      }  );
+});

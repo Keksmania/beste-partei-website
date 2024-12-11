@@ -1,6 +1,6 @@
 <template>
     <div style="width: 100%; display: flex; justify-content: center;">
-      <form @submit.prevent="submitForm" style="width: 30%;">
+      <form @submit.prevent="submitForm" style="width: 40%;">
         <div class="mb-3">
           <label for="name" class="form-label">Name</label>
           <input type="text" name="name" class="form-control" id="name" v-model="name" placeholder="Enter your name" required>

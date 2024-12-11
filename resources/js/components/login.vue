@@ -1,6 +1,6 @@
 <template>
   <div style="width: 100%; display: flex; justify-content: center;">
-    <form @submit.prevent="submitForm" style="width: 30%;">
+    <form @submit.prevent="submitForm" style="width: 40%;">
       <input type="hidden" name="_token" :value="csrfToken" />
       <div class="mb-3">
         <label for="email" class="form-label">Email address</label>
