@@ -8,7 +8,7 @@
     <h3>{{ $event->name }}</h3>
     <img 
         style="max-width: 20em; min-width: 20em" 
-        src="{{ $event->image ? asset('storage/' . $event->image) : url('/images/default.jpg') }}" 
+        src="{{ $event->image ? asset('storage/' . $event->image) : url('/images/1.jpg') }}" 
         alt="Image">
     <div class="mt-3">{!! $event->description !!}</div>
 </div>
