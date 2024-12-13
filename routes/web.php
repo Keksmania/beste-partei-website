@@ -8,6 +8,8 @@ use App\Http\Controllers\ContentController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
+use App\Mail\TestMail;
+use Illuminate\Support\Facades\Mail;
 
 // Standard pages
 Route::get('/', function () {
@@ -149,3 +151,15 @@ Route::prefix('api')->group(function () {
 
 // Logout route
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
+Route::get('/send-test-email', function () {
+    $user = Auth::user();
+    if ($user && $user->hasPermission('admin')) {
+        Mail::to('alper199312@yahoo.de')->send(new TestMail());
+        return 'Test email sent!';
+    }
+    abort(403, 'Unauthorized');
+    
+});
+
