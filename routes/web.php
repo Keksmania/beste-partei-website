@@ -157,7 +157,7 @@ Route::get('/send-test-email', function () {
     $user = Auth::user();
     if ($user && $user->hasPermission('admin')) {
      
-        dd(Mail::to('alper199312@yahoo.de')->send(new TestMail()));
+        Mail::to('alper199312@yahoo.de')->send(new TestMail());
         return 'Test email sent!';
     }
     abort(403, 'Unauthorized');
