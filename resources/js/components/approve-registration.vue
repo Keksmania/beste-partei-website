@@ -12,26 +12,28 @@
           <a class="nav-link" :class="{ active: filter === 'pending' }">Warten auf Genehmigung</a>
         </li>
       </ul>
-      <table class="table">
-        <thead>
-          <tr>
-            <th @click="sort('name')">Name</th>
-            <th @click="sort('email')">Email</th>
-            <th @click="sort('created_at')">Registrierungsdatum</th>
-            <th>Aktionen</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="user in users" :key="user.id">
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ new Date(user.created_at).toLocaleString() }}</td>
-            <td>
-              <button v-if="!user.activated" class="btn btn-success btn-sm" @click="approveRegistration(user.id)">Genehmigen</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th @click="sort('name')">Name</th>
+              <th @click="sort('email')">Email</th>
+              <th @click="sort('created_at')">Registrierungsdatum</th>
+              <th>Aktionen</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="user in users" :key="user.id">
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ new Date(user.created_at).toLocaleString() }}</td>
+              <td>
+                <button v-if="!user.activated" class="btn btn-success btn-sm" @click="approveRegistration(user.id)">Genehmigen</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <ul class="pagination justify-content-center">
         <li v-for="page in totalPages" :key="page" :class="['page-item', { active: currentPage === page }]">
           <button class="page-link" @click="goToPage(page)" :disabled="currentPage === page">{{ page }}</button>

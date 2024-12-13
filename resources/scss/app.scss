@@ -186,3 +186,27 @@ body {
 .min-vh-100 {
   min-height: 100vh;
 }
+
+.table {
+  table-layout: auto; /* Allows column widths to adjust dynamically */
+  width: 100%; /* Ensure the table takes the full width of the container */
+  word-wrap: break-word; /* Break long words onto new lines */
+}
+
+.table th, .table td {
+  white-space: normal; /* Allow text to wrap onto new lines */
+  word-break: break-word; /* Break long words for better responsiveness */
+  vertical-align: top; /* Align text to the top for multi-line cells */
+}
+
+@media (max-width: 768px) {
+  .table th, .table td {
+    font-size: 14px; /* Adjust font size for smaller screens */
+    padding: 0.5rem; /* Reduce padding for better spacing on smaller screens */
+  }
+}
+
+.nav-tabs .nav-link {
+  font-size: 14px; /* Smaller font for tabs on mobile */
+  padding: 0.5rem 1rem;
+}
