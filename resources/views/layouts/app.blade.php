@@ -15,10 +15,10 @@
 <body class="font-sans antialiased">
     @include('partials.navbar')
     <div id="app" class="min-h-screen bg-gray-100 parent">
-    
         @yield('content')
     </div>
+  
     @include('partials.footer')
 
-   </body>
+</body>
 </html>
