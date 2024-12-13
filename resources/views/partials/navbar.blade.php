@@ -24,14 +24,28 @@
                 </ul>
             </li>
 
-            @if(Auth::check())
+            @if(Auth::check() && Auth::user()->hasPermission('verwalter'))
                 <!-- Verwaltung Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="verwaltungDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         Verwaltung
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="verwaltungDropdown">
-                        <li><a class="dropdown-item" href="{{ url('/createpost') }}">Post erstellen</a></li>
+                        <li>
+                            <a class="dropdown-item {{ Auth::user()->hasPermission('posten') ? '' : 'disabled' }}" href="{{ url('/createpost') }}">
+                                Post erstellen
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ Auth::user()->hasPermission('admin') ? '' : 'disabled' }}" href="{{ url('/manage-permissions') }}">
+                                Benutzerrechte
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ Auth::user()->hasPermission('admin') ? '' : 'disabled' }}" href="{{ url('/registration-list') }}">
+                                Registrierungen genehmigen
+                            </a>
+                        </li>
                     </ul>
                 </li>
             @endif

@@ -39,7 +39,7 @@
   const submitForm = async () => {
     try {
       // Send POST request with Axios
-      const response = await axios.post('/register', {
+      const response = await axios.post('/api/register', {
         name: name.value,
         email: email.value,
         password: password.value,
