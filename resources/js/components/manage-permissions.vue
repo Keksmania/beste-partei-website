@@ -112,9 +112,10 @@
   <div
     v-if="isTouchDragging"
     class="dragged-element"
+    :class="{ hidden: !isTouchDragging }"
     :style="{ top: `${touchPosition.y}px`, left: `${touchPosition.x}px` }"
   >
-    {{ draggedPermission?.name || draggedPermissionToTrash?.permission_name }}
+    {{ draggedPermission?.name }}
   </div>
 </template>
 
@@ -126,7 +127,6 @@ const users = ref([]);
 const permissions = ref([]);
 const selectedUser = ref(null);
 const draggedPermission = ref(null);
-const draggedPermissionToTrash = ref(null);
 const isTouchDragging = ref(false); // Tracks if touch dragging is active
 const touchPosition = ref({ x: 0, y: 0 }); // Tracks touch position for visual feedback
 const userNameSearch = ref("");
@@ -210,59 +210,61 @@ const touchMove = (event) => {
   }
 };
 
-const dropPermission = () => {
+const dropPermission = async () => {
   if (selectedUser.value && draggedPermission.value) {
     const alreadyAssigned = selectedUserPermissions.value.some(
       (p) => p.permission_id === draggedPermission.value.id
     );
     if (!alreadyAssigned) {
-      assignPermission();
+      try {
+        await axios.post("/api/assign-permission", {
+          user_id: selectedUser.value.id,
+          permission_id: draggedPermission.value.id,
+        });
+        // Add permission to the user's permissions list
+        selectedUser.value.permissions.push(draggedPermission.value);
+      } catch (error) {
+        console.error("Error assigning permission:", error);
+      }
     }
   }
-  isTouchDragging.value = false; // Reset touch dragging state
-};
-
-const assignPermission = async () => {
-  try {
-    await axios.post("/api/assign-permission", {
-      user_id: selectedUser.value.id,
-      permission_id: draggedPermission.value.id,
-    });
-    selectedUser.value.permissions.push(draggedPermission.value);
-  } catch (error) {
-    console.error("Error assigning permission:", error);
-  }
+  resetDraggingState();
 };
 
 const dragPermissionToTrash = (permission, event) => {
-  draggedPermissionToTrash.value = permission;
+  draggedPermission.value = permission;
   event.dataTransfer?.setData("text/plain", permission.permission_id);
 };
 
-const touchPermissionToTrash = (permission) => {
-  draggedPermissionToTrash.value = permission;
+const touchPermissionToTrash = (permission, event) => {
+  draggedPermission.value = permission;
   isTouchDragging.value = true;
+  touchPosition.value = { x: event.touches[0].clientX, y: event.touches[0].clientY };
 };
 
-const dropToTrash = () => {
-  if (selectedUser.value && draggedPermissionToTrash.value) {
-    revokePermission();
+const dropToTrash = async () => {
+  if (selectedUser.value && draggedPermission.value) {
+    try {
+      await axios.post("/api/revoke-permission", {
+        user_id: selectedUser.value.id,
+        permission_id: draggedPermission.value.permission_id || draggedPermission.value.id,
+      });
+      // Remove the permission from the user's permissions list
+      selectedUser.value.permissions = selectedUser.value.permissions.filter(
+        (p) => p.id !== draggedPermission.value.permission_id
+      );
+    } catch (error) {
+      console.error("Error revoking permission:", error);
+    }
   }
-  isTouchDragging.value = false; // Reset touch dragging state
+  resetDraggingState();
 };
 
-const revokePermission = async () => {
-  try {
-    await axios.post("/api/revoke-permission", {
-      user_id: selectedUser.value.id,
-      permission_id: draggedPermissionToTrash.value.permission_id,
-    });
-    selectedUser.value.permissions = selectedUser.value.permissions.filter(
-      (p) => p.id !== draggedPermissionToTrash.value.permission_id
-    );
-  } catch (error) {
-    console.error("Error revoking permission:", error);
-  }
+
+const resetDraggingState = () => {
+  isTouchDragging.value = false;
+  draggedPermission.value = null;
+  touchPosition.value = { x: 0, y: 0 };
 };
 
 const goToPage = (page) => {
@@ -278,6 +280,7 @@ onMounted(() => {
 });
 </script>
 
+
 <style>
 /* For visible touch dragging feedback */
 .dragged-element {
@@ -285,5 +288,16 @@ onMounted(() => {
   pointer-events: none;
   z-index: 9999;
   opacity: 0.8;
+  font-size: 20px; /* Bigger size */
+  font-weight: bold; /* Bold text */
+  background-color: rgba(255, 255, 255, 0.9); /* Slight background for contrast */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transform: translate(-50%, -50%);
+}
+
+.dragged-element.hidden {
+  display: none; /* Hide element when not touch dragging */
 }
 </style>
