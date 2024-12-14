@@ -12,53 +12,55 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     public function register(Request $request)
-{
-    $email = trim(strtolower($request->email));
-    $encryptedEmail = Crypt::encryptString($email);
-    $emailHash = hash('sha256', $email);
+    {
+        $email = trim(strtolower($request->email));
+        $encryptedEmail = Crypt::encryptString($email);
+        $emailHash = hash('sha256', $email);
 
-    // Check if the email hash already exists
-    if (User::where('email_hash', $emailHash)->exists()) {
+        // Check if the email hash already exists
+        if (User::where('email_hash', $emailHash)->exists()) {
+            return response()->json([
+                'message' => 'Diese Email ist schon registriert!',
+            ], 409);
+        }
+
+        // Validate input
+        $request->validate([
+            'firstname' => 'required|string|max:255', // Added firstname validation
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255',
+            'password' => 'required|string|min:8|confirmed',
+            'captcha' => 'required|string',
+            'captcha_fruit' => 'required|string',
+        ]);
+
+        // Validate CAPTCHA
+        $expectedCaptcha = strrev($request->captcha_fruit);
+        if ($request->captcha !== $expectedCaptcha) {
+            return response()->json([
+                'message' => 'CAPTCHA falsch. Probiere es nochmal.',
+            ], 400); // Bad request
+        }
+
+        $user = User::create([
+            'firstname' => $request->firstname, // Storing firstname
+            'name' => $request->name,
+            'email' => $encryptedEmail,
+            'email_hash' => $emailHash,
+            'password' => Hash::make($request->password),
+            'activated' => false,
+            'verification_key' => Str::random(64),
+        ]);
+
+        if (!config('app.debug')) {
+            $verificationUrl = url("/verify-email?key={$user->verification_key}");
+            Mail::to($email)->send(new EmailVerificationMail($user->firstname, $verificationUrl)); // Use firstname in email
+        }
         return response()->json([
-            'message' => 'Diese Email ist schon registriert!',
-        ], 409);
+            'message' => 'Benutzer wurde erstellt',
+            'user' => $user,
+        ], 201);
     }
-
-    // Validate input
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255',
-        'password' => 'required|string|min:8|confirmed',
-        'captcha' => 'required|string',
-        'captcha_fruit' => 'required|string',
-    ]);
-
-    // Validate CAPTCHA
-    $expectedCaptcha = strrev($request->captcha_fruit);
-    if ($request->captcha !== $expectedCaptcha) {
-        return response()->json([
-            'message' => 'CAPTCHA falsch. Probiere es nochmal.',
-        ], 400); // Bad request
-    }
-
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $encryptedEmail,
-        'email_hash' => $emailHash,
-        'password' => Hash::make($request->password),
-        'activated' => false,
-        'verification_key' => Str::random(64),
-    ]);
-
-    $verificationUrl = url("/verify-email?key={$user->verification_key}");
-    Mail::to($email)->send(new EmailVerificationMail($user->name, $verificationUrl));
-
-    return response()->json([
-        'message' => 'Benutzer wurde erstellt',
-        'user' => $user,
-    ], 201);
-}
-
 
     public function getRegistrations(Request $request)
     {

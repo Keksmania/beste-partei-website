@@ -4,15 +4,19 @@
       <input type="hidden" name="_token" :value="csrfToken" />
       <div class="mb-3">
         <label for="email" class="form-label">Email</label>
-        <input type="email" name="email" class="form-control" id="email" v-model="email" placeholder="Enter your email" required>
+        <input type="email" name="email" class="form-control" id="email" v-model="email" placeholder="Email eingeben" required>
       </div>
       <div class="mb-3">
         <label for="password" class="form-label">Passwort</label>
-        <input type="password" name="password" class="form-control" id="password" v-model="password" placeholder="Enter your password" required>
+        <input type="password" name="password" class="form-control" id="password" v-model="password" placeholder="Passwort eingeben" required>
       </div>
       <button type="submit" class="btn btn-primary w-100">Login</button>
-      <p  class="error-message">{{ errorMessage }}</p>
+      <p class="error-message">{{ errorMessage }}</p>
 
+      <!-- Link to password reset page -->
+      <div class="text-center mt-3">
+        <a href="/forgot-password" class="text-primary">Passwort vergessen?</a>
+      </div>
     </form>
   </div>
 </template>
@@ -30,25 +34,16 @@ const errorMessage = ref('');
 // Submit form function
 const submitForm = async () => {
   try {
-    // Send POST request with Axios
     const response = await axios.post('/api/login', {
       email: email.value,
       password: password.value,
-      _token: csrfToken.value, // Include CSRF token
+      _token: csrfToken.value,
     });
 
-    // Handle response (success)
-    console.log('Login successful:', response.data);
-
-    // Redirect to the start page
     window.location.href = '/';
   } catch (error) {
-    // Handle error
-    console.error('Login failed:', error.response ? error.response.data.message : error.message);
     errorMessage.value = error.response ? error.response.data.message : error.message;
-    console.log('Error message set:', errorMessage.value);
-    setTimeout(function(){errorMessage.value =  " "}, 3500)
+    setTimeout(() => (errorMessage.value = ''), 3500);
   }
 };
 </script>
-

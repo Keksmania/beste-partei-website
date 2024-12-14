@@ -147,6 +147,8 @@ Route::prefix('api')->group(function () {
     Route::middleware('throttle:10|10,1')->group(function () {
         Route::post('/login', [AuthController::class, 'login']);       
         Route::post('/register', [UserController::class, 'register']);
+        Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail']);
+        Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     });
 });
 
@@ -159,6 +161,16 @@ Route::view('/registration-success', 'registration-success')->name('registration
 Route::view('/email-verification-success', 'email-verification-success')->name('email-verification-success');
 
 Route::get('/verify-email', [App\Http\Controllers\AuthController::class, 'verifyEmail']);
+
+Route::get('/forgot-password', function () {
+    return view('forgot-password');
+})->middleware('guest')->name('password.request');
+
+Route::get('/reset-password', function () {
+    return view('reset-password');
+})->middleware('guest')->name('password.reset');
+
+
 
 
 

@@ -7,12 +7,16 @@
     <link rel="stylesheet" href="/richtexteditor/rte_theme_default.css" />
     <script src="/richtexteditor/rte.js"></script>
     <script src="/richtexteditor/plugins/all_plugins.js"></script>
+   
     <title>@yield('title', config('app.name', 'Laravel'))</title>
 
 
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased">
+    <!-- In your <body> tag (for the scripts) -->
+
+
     @include('partials.navbar')
     <div id="app" class="min-h-screen bg-gray-100 parent">
         @yield('content')

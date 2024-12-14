@@ -79,7 +79,12 @@ footer {
   width: 100%;
 }
 
+
+
+
 .event-box {
+  border-style: none;
+  transition: border 0.3s;
   margin: 0.5em;
   min-width: 15em;
   min-height: 15em;
@@ -108,10 +113,38 @@ footer {
   }
 }
 
+.event-image {
+  position: relative;
+}
+
+.event-date {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 0.9em;
+}
+
+.future-event {
+  border-width: 3px;
+  border-color: gray;
+  border-style: solid;
+}
+
+.today-event {
+  border-color: red;
+  border-style: solid; 
+}
+
 .arrow {
   border-style: hidden;
   background: none;
   font-size: 3em;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 5px;
+  border-radius: 5px;
   z-index: 9999;
 }
 

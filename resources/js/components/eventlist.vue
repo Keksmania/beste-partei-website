@@ -1,8 +1,20 @@
 <template>
   <div style="display:flex; width: 100%; flex-direction: column; min-height: 16em; max-width: 80%; overflow: hidden; margin-left: 10%;">
     <div class="event-container" :style="{ transform: `translateX(${-position}em)` }">
-      <a v-for="event in events" :key="event.id" class="event-box" :href="'/post/' + event.id">
-        <div class="event-image"><img :src="event.imageSrc" alt="Image"></div>
+      <a 
+        v-for="event in events" 
+        :key="event.id" 
+        class="event-box" 
+        :href="'/post/' + event.id"
+        :class="{ 
+          'future-event': new Date(event.date) > new Date(),
+          'today-event': new Date(event.date).toDateString() === new Date().toDateString() 
+        }"
+      >
+        <div class="event-image">
+          <img :src="event.imageSrc" alt="Image">
+          <div class="event-date">{{ new Date(event.date).toLocaleDateString() }}</div>
+        </div>
         <div class="event-name"><h5>{{ event.name }}</h5></div>
       </a>
     </div>
@@ -59,3 +71,4 @@ onMounted(() => {
   fetchEvents();
 });
 </script>
+

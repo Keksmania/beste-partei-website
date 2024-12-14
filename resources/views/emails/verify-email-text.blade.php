@@ -7,4 +7,4 @@ Vielen Dank für die Registrierung. Bitte verifizieren Sie Ihre E-Mail-Adresse, 
 Falls der Link nicht funktioniert, kopieren Sie ihn und fügen Sie ihn in Ihren Browser ein.
 
 Vielen Dank,
-Ihr Unternehmen
+Studentische Politik-Revolution
