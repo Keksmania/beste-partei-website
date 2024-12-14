@@ -75,4 +75,23 @@ public function logout(Request $request)
             ]);
         }
     }
+
+    public function verifyEmail(Request $request)
+    {
+        $key = $request->get('key');
+
+        $user = User::where('verification_key', $key)->first();
+
+        if (!$user) {
+            return redirect('/')->with('error', 'Invalid verification key.');
+        }
+
+        $user->update([
+            'email_verified_at' => now(),
+            'verification_key' => null, // Invalidate the key
+        ]);
+
+        return redirect('/')->with('success', 'Email verified successfully!');
+    }
+
 }

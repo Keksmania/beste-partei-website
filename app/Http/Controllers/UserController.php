@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use App\Models\User;
+use App\Mail\EmailVerificationMail;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -34,8 +37,10 @@ class UserController extends Controller
             'email_hash' => $emailHash, // Store hash for searching
             'password' => Hash::make($request->password),
             'activated' => false, // Default to false
-        ]);
-
+            'verification_key' => Str::random(64),
+     ]);
+     $verificationUrl = url("/verify-email?key={$user->verification_key}");
+     Mail::to($email)->send(new EmailVerificationMail($user->name, $verificationUrl));
         return response()->json([
             'message' => 'User created successfully',
             'user' => $user,
