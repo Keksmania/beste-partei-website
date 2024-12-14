@@ -24,12 +24,21 @@ class AuthController extends Controller
         $user = User::where('email_hash', $emailHash)->first();
     
         if ($user) {
+            // Check if the user is activated
             if (!$user->activated) {
                 return response()->json([
-                    'message' => 'User not activated',
+                    'message' => 'Your account is not activated. Please contact the administrator.',
                 ], 403); // Forbidden response
             }
     
+            // Check if the email is verified
+            if (!$user->email_verified_at) {
+                return response()->json([
+                    'message' => 'Your email is not verified. Please verify your email before logging in.',
+                ], 403); // Forbidden response
+            }
+    
+            // Verify the password
             if (Hash::check($request->password, $user->password)) {
                 Auth::login($user);
                 $request->session()->put('user', $user);
