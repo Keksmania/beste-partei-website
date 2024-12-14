@@ -10,6 +10,7 @@ import managepermissions from './components/manage-permissions.vue';
 import approveregistration from './components/approve-registration.vue';
 import forgotpassword from './components/forgot-password.vue';
 import resetpassword from './components/reset-password.vue';
+import listevents from './components/list-events.vue';
 import Swal from 'sweetalert2';
 
 
@@ -25,5 +26,6 @@ app.component('manage-permissions', managepermissions);
 app.component('approve-registration', approveregistration);
 app.component('forgot-password', forgotpassword);
 app.component('reset-password', resetpassword);
+app.component('list-events', listevents);
 app.mount("#app");
 

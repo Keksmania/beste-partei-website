@@ -59,7 +59,7 @@
             class="list-group-item"
             draggable="true"
             @dragstart="dragStart(permission, $event)"
-            @touchstart="touchStart(permission)"
+            @touchstart="touchStart(permission, $event)"
           >
             {{ permission.name }}
           </div>
@@ -83,7 +83,7 @@
             class="list-group-item"
             draggable="true"
             @dragstart="dragPermissionToTrash(permission, $event)"
-            @touchstart="touchPermissionToTrash(permission)"
+            @touchstart="touchPermissionToTrash(permission, $event)"
           >
             {{ permission.permission_name }}
           </div>

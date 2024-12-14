@@ -1,6 +1,6 @@
 <template>
   <div style="width: 100%; display: flex; justify-content: center;">
-    <form @submit.prevent="createEvent" style="width:100%" enctype="multipart/form-data">
+    <form @submit.prevent="saveEvent" style="width:100%" enctype="multipart/form-data">
       <div class="mb-3">
         <label for="eventName" class="form-label">Event Name</label>
         <input
@@ -37,10 +37,12 @@
           id="eventImage"
           ref="image"
           accept="image/*"
+          @change="onFileChange"
         />
+        <img v-if="thumbnailSrc" :src="thumbnailSrc" alt="Thumbnail" class="img-thumbnail mt-3" style="max-height: 200px;">
       </div>
 
-      <button type="submit" class="btn btn-primary w-100">Erstelle Event</button>
+      <button type="submit" class="btn btn-primary w-100">{{ isEditMode ? 'Update' : 'Erstelle Event' }}</button>
       <p class="error-message" v-if="errorMessage">{{ errorMessage }}</p>
       <p class="success-message" v-if="successMessage">{{ successMessage }}</p>
     </form>
@@ -48,8 +50,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
+
+// Props
+const props = defineProps({
+  eventId: Number,
+  isEditMode: Boolean,
+});
 
 // Reactive state
 const csrfToken = ref(document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
@@ -59,11 +67,18 @@ const errorMessage = ref('');
 const successMessage = ref('');
 const editor = ref(null);
 const image = ref(null);
+const thumbnailSrc = ref(null);
+
+// Base URL of the website
+const baseURL = ref(`${window.location.origin}/`);
 
 // Initialize editor
 onMounted(() => {
   if (editor.value) {
     new RichTextEditor(editor.value);
+  }
+  if (props.isEditMode) {
+    fetchEvent();
   }
 });
 
@@ -73,8 +88,39 @@ const getEditorContent = () => {
   return iframe?.contentDocument?.body.innerHTML || '';
 };
 
-// Create event function
-const createEvent = async () => {
+// Function to set editor content
+const setEditorContent = (content) => {
+  const iframe = editor.value?.querySelector('iframe.rte-editable');
+  if (iframe) {
+    iframe.contentDocument.body.innerHTML = content;
+  }
+};
+
+// Function to handle file change
+const onFileChange = () => {
+  const file = image.value?.files[0];
+  if (file) {
+    thumbnailSrc.value = URL.createObjectURL(file);
+  }
+};
+
+// Fetch event details for editing
+const fetchEvent = async () => {
+  try {
+    const response = await axios.get(`/api/events/${props.eventId}`);
+    const event = response.data.event;
+    eventName.value = event.name;
+    eventDate.value = event.date;
+    setEditorContent(event.description);
+    thumbnailSrc.value = event.thumbnail ? `${baseURL.value}${event.thumbnail}` : `${baseURL.value}images/1.jpg`; // Use thumbnail field
+  } catch (error) {
+    errorMessage.value = 'Error fetching event details';
+    setTimeout(() => (errorMessage.value = ''), 3500);
+  }
+};
+
+// Create or update event function
+const saveEvent = async () => {
   const description = getEditorContent();
   const imageFile = image.value?.files[0];
 
@@ -94,18 +140,24 @@ const createEvent = async () => {
   formData.append('_token', csrfToken.value);
 
   try {
-    const response = await axios.post('/api/events', formData);
-    successMessage.value = 'Event created successfully!';
+    let response;
+    if (props.isEditMode) {
+      response = await axios.post(`/api/events/${props.eventId}`, formData);
+      successMessage.value = 'Event updated successfully!';
+    } else {
+      response = await axios.post('/api/events', formData);
+      successMessage.value = 'Event created successfully!';
+    }
     setTimeout(() => (successMessage.value = ''), 3500);
 
     // Reset form
     eventName.value = '';
     eventDate.value = '';
-    editor.value.innerHTML = '';
+    setEditorContent('');
     image.value.value = '';
+    thumbnailSrc.value = null;
   } catch (error) {
-    errorMessage.value =
-      error.response?.data?.message || 'An error occurred while creating the event.';
+    errorMessage.value = error.response?.data?.message || 'An error occurred while saving the event.';
     setTimeout(() => (errorMessage.value = ''), 3500);
   }
 };
@@ -122,5 +174,10 @@ const createEvent = async () => {
   color: green;
   margin-top: 1rem;
   text-align: center;
+}
+
+.img-thumbnail {
+  display: block;
+  margin: auto;
 }
 </style>

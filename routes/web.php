@@ -57,6 +57,12 @@ Route::get('/registration-list', function () {
 // Post content
 Route::get('/post/{id}', [ContentController::class, 'getPost']);
 
+
+// API route for fetching a specific event
+Route::get('/api/events/{id}', [ContentController::class, 'getPostApi']);
+
+
+
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
     // Manage permissions route
@@ -128,8 +134,8 @@ Route::middleware(['auth'])->group(function () {
             abort(403, 'Unauthorized');
         });
     });
-
-    // API route for storing events
+    
+    // API route for managing events
     Route::prefix('api')->group(function () {
         Route::post('/events', function (Request $request) {
             $user = Auth::user();
@@ -138,8 +144,45 @@ Route::middleware(['auth'])->group(function () {
             }
             abort(403, 'Unauthorized');
         });
+
+    
+        Route::post('/events/{id}', function (Request $request, $id) {
+            $user = Auth::user();
+            if ($user && $user->hasPermission('posten')) {
+                return (new ContentController)->update($request, $id);
+            }
+            abort(403, 'Unauthorized');
+        });
+    
+        Route::delete('/events/{id}', function ($id) {
+            $user = Auth::user();
+            if ($user && $user->hasPermission('posten')) {
+                return (new ContentController)->destroy($id);
+            }
+            abort(403, 'Unauthorized');
+        });
     });
+    
 });
+Route::get('/list-events', function (Request $request) {
+    $user = Auth::user();
+    if ($user && $user->hasPermission('posten')) {
+        return view('list-events');
+    }
+    abort(403, 'Unauthorized');
+});
+
+Route::get('/edit-event/{id}', function ($id) { 
+    $user = Auth::user();
+    if ($user && $user->hasPermission('posten')) {
+        return view('edit-event', ['eventId' => $id]);
+    }
+    abort(403, 'Unauthorized');
+
+
+});
+
+
 
 // Group routes for API with a prefix
 Route::prefix('api')->group(function () {

@@ -31,13 +31,16 @@ import axios from 'axios';
 
 const events = ref([]);
 const position = ref(0);
-const offset = ref(0);
+const currentPage = ref(1);
 const limit = 20;
 const totalEvents = ref(0);
 
 const fetchEvents = async () => {
   const response = await axios.get('/api/events', {
-    params: { offset: offset.value, limit }
+    params: { 
+      page: currentPage.value, 
+      limit: limit 
+    }
   });
 
   const loadedEvents = response.data.events.map(event => ({
@@ -47,7 +50,6 @@ const fetchEvents = async () => {
 
   events.value.push(...loadedEvents);
   totalEvents.value = response.data.total;
-  offset.value += limit;
 };
 
 const moveLeft = () => {
@@ -56,14 +58,14 @@ const moveLeft = () => {
 };
 
 const moveRight = async () => {
-  if (position.value / 16 < totalEvents.value - 3) {
+  if (position.value / 16 < events.value.length - 3) {
     position.value += 16;
   } else {
-    return;
-  }
-
-  if (position.value / 16 >= events.value.length - 10 && offset.value < totalEvents.value) {
-    await fetchEvents();
+    if (currentPage.value * limit < totalEvents.value) {
+      currentPage.value += 1;
+      await fetchEvents();
+      position.value += 16;
+    }
   }
 };
 
@@ -71,4 +73,3 @@ onMounted(() => {
   fetchEvents();
 });
 </script>
-

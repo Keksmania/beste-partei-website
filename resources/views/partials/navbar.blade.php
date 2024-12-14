@@ -37,6 +37,11 @@
                             </a>
                         </li>
                         <li>
+                            <a class="dropdown-item {{ Auth::user()->hasPermission('posten') ? '' : 'disabled' }}" href="{{ url('/list-events') }}">
+                                Posts verwalten
+                            </a>
+                        </li>
+                        <li>
                             <a class="dropdown-item {{ Auth::user()->hasPermission('admin') ? '' : 'disabled' }}" href="{{ url('/manage-permissions') }}">
                                 Benutzerrechte
                             </a>
@@ -53,7 +58,7 @@
         <ul class="navbar-nav ms-auto">
             @if(Auth::check())
                 <li class="nav-item d-flex align-items-center">
-                    <span class="nav-link">{{ Auth::user()->name }}</span>
+                    <span class="nav-link">{{ Auth::user()->firstname }}</span>
                     <div style="margin-right:1em">
                       <button id="logoutButton" class="btn btn-danger btn-sm ms-2">Logout</button>
                     </div>
