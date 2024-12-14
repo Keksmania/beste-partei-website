@@ -29,11 +29,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>Email Verification</h1>
-        <p>Hello {{ $name }},</p>
-        <p>Thank you for registering. Please click the button below to verify your email address:</p>
-        <a href="{{ $verificationUrl }}" class="btn">Verify Email</a>
-        <p>If the button doesn't work, you can also click the following link:</p>
+        <h1>E-Mail-Verifizierung</h1>
+        <p>Hallo {{ $name }},</p>
+        <p>Vielen Dank für die Registrierung. Bitte klicken Sie auf den untenstehenden Button, um Ihre E-Mail-Adresse zu verifizieren:</p>
+        <a href="{{ $verificationUrl }}" class="btn">E-Mail verifizieren</a>
+        <p>Falls der Button nicht funktioniert, können Sie auch den folgenden Link verwenden:</p>
         <p><a href="{{ $verificationUrl }}">{{ $verificationUrl }}</a></p>
     </div>
 </body>

@@ -1,10 +1,10 @@
-Hello {{ $name }},
+Hallo {{ $name }},
 
-Thank you for registering. Please verify your email by clicking the link below:
+Vielen Dank für die Registrierung. Bitte verifizieren Sie Ihre E-Mail-Adresse, indem Sie auf den untenstehenden Link klicken:
 
 {{ $verificationUrl }}
 
-If the link doesn't work, copy and paste it into your browser.
+Falls der Link nicht funktioniert, kopieren Sie ihn und fügen Sie ihn in Ihren Browser ein.
 
-Thank you,
-Your Company
+Vielen Dank,
+Ihr Unternehmen

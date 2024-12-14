@@ -25,12 +25,12 @@
       </div>
 
       <div class="mb-3">
-        <label for="eventDescription" class="form-label">Event Description</label>
+        <label for="eventDescription" class="form-label">Event Beschreibung</label>
         <div id="editor" ref="editor"></div>
       </div>
 
       <div class="mb-3">
-        <label for="eventImage" class="form-label">Event Image</label>
+        <label for="eventImage" class="form-label">Event Bild</label>
         <input
           type="file"
           class="form-control"
@@ -40,7 +40,7 @@
         />
       </div>
 
-      <button type="submit" class="btn btn-primary w-100">Create Event</button>
+      <button type="submit" class="btn btn-primary w-100">Erstelle Event</button>
       <p class="error-message" v-if="errorMessage">{{ errorMessage }}</p>
       <p class="success-message" v-if="successMessage">{{ successMessage }}</p>
     </form>
