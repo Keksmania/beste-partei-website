@@ -38,8 +38,10 @@ Route::get('/login', function () {
 })->name('login');
 
 
-Route::get('/register', function () {
-    return view('register');
+Route::middleware(['guest'])->group(function () {
+    Route::get('/register', function () {
+        return view('register');
+    })->name('register');
 });
 
 Route::get('/registration-list', function () {
@@ -153,6 +155,11 @@ Route::prefix('api')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
+Route::view('/registration-success', 'registration-success')->name('registration-success');
+Route::view('/email-verification-success', 'email-verification-success')->name('email-verification-success');
+
 Route::get('/verify-email', [App\Http\Controllers\AuthController::class, 'verifyEmail']);
+
+
 
 

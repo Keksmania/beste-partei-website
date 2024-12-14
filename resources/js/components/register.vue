@@ -50,7 +50,7 @@
       console.log('Registration successful:', response.data);
   
       // Redirect or perform further actions
-      window.location.href = '/';
+      window.location.href = '/registration-success';
     } catch (error) {
       // Handle error
       errorMessage.value = error.response ? error.response.data.message : error.message;

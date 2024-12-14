@@ -5,7 +5,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use App\Http\Requests\Auth\LoginRequest;
+use App\Mail\EmailVerificationMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Crypt;
 
 class AuthController extends Controller
 {
@@ -75,6 +77,9 @@ public function logout(Request $request)
             ]);
         }
     }
+ 
+
+
 
     public function verifyEmail(Request $request)
     {
@@ -91,7 +96,7 @@ public function logout(Request $request)
             'verification_key' => null, // Invalidate the key
         ]);
 
-        return redirect('/')->with('success', 'Email verified successfully!');
+        return redirect('/email-verification-success')->with('success', 'Email verified successfully!');
     }
 
 }
