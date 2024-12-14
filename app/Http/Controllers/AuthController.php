@@ -144,9 +144,10 @@ public function logout(Request $request)
         );
     
         // Send reset email
-        $resetUrl = url("/reset-password?token={$resetToken}&email={$email}");
-        Mail::to(Crypt::decryptString($user->email))->send(new ResetPasswordMail($user->firstname, $resetUrl));
-    
+        if (!config('app.debug')) {
+            $resetUrl = url("/reset-password?token={$resetToken}&email={$email}");
+            Mail::to(Crypt::decryptString($user->email))->send(new ResetPasswordMail($user->firstname, $resetUrl));
+        }
         return response()->json([
             'status' => 'success',
             'message' => 'Wir haben Ihnen einen Link zum Zurücksetzen des Passworts gesendet.'
