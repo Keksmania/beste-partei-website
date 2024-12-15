@@ -109,14 +109,7 @@
       </div>
     </div>
   </div>
-  <div
-    v-if="isTouchDragging"
-    class="dragged-element"
-    :class="{ hidden: !isTouchDragging }"
-    :style="{ top: `${touchPosition.y}px`, left: `${touchPosition.x}px` }"
-  >
-    {{ draggedPermission?.name }}
-  </div>
+  
 </template>
 
 <script setup>
