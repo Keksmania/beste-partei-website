@@ -19,21 +19,28 @@ class ContentController extends Controller
     {
         $search = $request->query('search', '');
         $page = $request->query('page', 1);
-        $limit = 10; // Limit per page
-        $offset = ($page - 1) * $limit;
-
+        $limit = $request->query('limit', 10); // Limit per page
+        $year = $request->query('year', null);
+        $month = $request->query('month', null);
+    
         $eventsQuery = Event::query();
-
+    
         if ($search) {
             $eventsQuery->where('name', 'like', '%' . $search . '%');
         }
-
+        if ($year) {
+            $eventsQuery->whereYear('date', $year);
+        }
+        if ($month) {
+            $eventsQuery->whereMonth('date', $month);
+        }
+    
         $total = $eventsQuery->count();
         $events = $eventsQuery->orderBy('date', 'desc')
-            ->offset($offset)
+            ->offset(($page - 1) * $limit)
             ->limit($limit)
             ->get();
-
+    
         // Transform events to include the image URL
         $eventsTransformed = $events->map(function ($event) {
             return [
@@ -46,14 +53,14 @@ class ContentController extends Controller
                     : url('/images/1.jpg'), // Placeholder image
             ];
         });
-
+    
         return response()->json([
             'events' => $eventsTransformed,
             'current_page' => $page,
             'total_pages' => ceil($total / $limit),
         ]);
     }
-
+    
 
 
     /**
@@ -403,4 +410,7 @@ class ContentController extends Controller
             'message' => 'Event deleted successfully!',
         ]);
     }
+
+
+
 }

@@ -58,11 +58,6 @@ Route::get('/registration-list', function () {
 Route::get('/post/{id}', [ContentController::class, 'getPost']);
 
 
-// API route for fetching a specific event
-Route::get('/api/events/{id}', [ContentController::class, 'getPostApi']);
-
-
-
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
     // Manage permissions route
@@ -187,6 +182,9 @@ Route::get('/edit-event/{id}', function ($id) {
 // Group routes for API with a prefix
 Route::prefix('api')->group(function () {
     Route::get('/events', [ContentController::class, 'index']);
+    Route::get('/events/{id}', [ContentController::class, 'getPostApi']);
+
+
     Route::middleware('throttle:10|10,1')->group(function () {
         Route::post('/login', [AuthController::class, 'login']);       
         Route::post('/register', [UserController::class, 'register']);
@@ -194,6 +192,8 @@ Route::prefix('api')->group(function () {
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     });
 });
+
+
 
 
 // Logout route
