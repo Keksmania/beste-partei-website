@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Event;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ContentController extends Controller
 {
@@ -61,6 +62,32 @@ class ContentController extends Controller
         ]);
     }
     
+
+    public function getPostCount(Request $request){
+        $year = $request->query('year', null);
+        $month = $request->query('month', null);
+    
+        // Start the query on the events table
+        $eventsQuery = DB::table('events'); 
+    
+        // Apply year filter if provided
+        if ($year) {
+            $eventsQuery->whereYear('date', $year);
+        }
+    
+        // Apply month filter if provided
+        if ($month) {
+            $eventsQuery->whereMonth('date', $month);
+        }
+    
+        // Count the events
+        $totalEvents = $eventsQuery->count();
+    
+        // Return the total count as a JSON response
+        return response()->json([
+            'total' => $totalEvents
+        ]);
+    }
 
 
     /**

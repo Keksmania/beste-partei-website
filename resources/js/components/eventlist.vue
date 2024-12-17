@@ -1,17 +1,36 @@
 <template>
   <!-- Filters -->
   <div style="display: flex; gap: 1em; margin: 1em 0; justify-content: center;">
+    <!-- Year Dropdown -->
     <select v-model="selectedYear" @change="applyFilters" class="filter-dropdown">
-      <option value="" disabled selected>Select Year</option>
-      <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+      <option value="" disabled selected>Jahr auswählen</option>
+      <option 
+        v-for="year in availableYears" 
+        :key="year" 
+        :value="year"
+      >
+        {{ year }} ({{ yearCounts[year] || 0 }})
+      </option>
     </select>
 
-    <select v-model="selectedMonth" @change="applyFilters" class="filter-dropdown">
-      <option value="" disabled selected>Select Month</option>
-      <option v-for="(month, index) in months" :key="index" :value="index + 1">{{ month }}</option>
+    <!-- Month Dropdown (only if a year is selected) -->
+    <select 
+      v-if="selectedYear" 
+      v-model="selectedMonth" 
+      @change="applyFilters" 
+      class="filter-dropdown"
+    >
+      <option value="" disabled selected>Monat auswählen</option>
+      <option 
+        v-for="(month, index) in months" 
+        :key="index" 
+        :value="index + 1"
+      >
+        {{ month }} ({{ monthCounts[index + 1] || 0 }})
+      </option>
     </select>
 
-    <button @click="resetFilters" class="btn btn-secondary">Reset</button>
+    <button @click="resetFilters" class="btn btn-secondary">Zurücksetzen</button>
   </div>
 
   <!-- Carousel -->
@@ -41,6 +60,8 @@
   </div>
 </template>
 
+
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
@@ -52,20 +73,44 @@ const currentPage = ref(1);
 const limit = 20;
 const totalEvents = ref(0);
 
-// Filters
+// Filters and event counts
 const selectedYear = ref('');
 const selectedMonth = ref('');
 const availableYears = ref([]);
 const months = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+  "Januar", "Februar", "März", "April", "Mai", "Juni",
+  "July", "August", "September", "Oktober", "November", "Dezember"
 ];
+const yearCounts = ref({}); // { 2024: 23, 2023: 17, ... }
+const monthCounts = ref({}); // { 1: 3, 2: 5, ... }
 
 // Generate available years dynamically
-const generateYears = () => {
+const generateYears = async () => {
   const currentYear = new Date().getFullYear();
   for (let year = currentYear; year >= 2000; year--) {
     availableYears.value.push(year);
+  }
+  await fetchYearCounts();
+};
+
+// Fetch total events per year
+const fetchYearCounts = async () => {
+  for (let year of availableYears.value) {
+    const response = await axios.get('/api/events/filter/count', {
+      params: { year }
+    });
+    yearCounts.value[year] = response.data.total || 0;
+  }
+};
+
+// Fetch total events per month for a specific year
+const fetchMonthCounts = async (year) => {
+  monthCounts.value = {};
+  for (let month = 1; month <= 12; month++) {
+    const response = await axios.get('/api/events/filter/count', {
+      params: { year, month }
+    });
+    monthCounts.value[month] = response.data.total || 0;
   }
 };
 
@@ -96,7 +141,12 @@ const fetchEvents = async (reset = true) => {
 };
 
 // Apply filters
-const applyFilters = () => {
+const applyFilters = async () => {
+  if (selectedYear.value) {
+    await fetchMonthCounts(selectedYear.value); // Fetch month counts when a year is selected
+  } else {
+    monthCounts.value = {};
+  }
   fetchEvents(true);
 };
 
@@ -104,6 +154,7 @@ const applyFilters = () => {
 const resetFilters = () => {
   selectedYear.value = '';
   selectedMonth.value = '';
+  monthCounts.value = {};
   fetchEvents(true);
 };
 
@@ -131,6 +182,8 @@ onMounted(() => {
   fetchEvents();
 });
 </script>
+
+
 
 <style>
 .filter-dropdown {

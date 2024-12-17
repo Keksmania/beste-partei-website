@@ -19,11 +19,11 @@
       </div>
       <div class="mb-3">
         <label for="password_confirmation" class="form-label">Bestätige Passwort</label>
-        <input type="password" name="password_confirmation" class="form-control" id="password_confirmation" v-model="passwordConfirmation" placeholder="Confirm your password" required>
+        <input type="password" name="password_confirmation" class="form-control" id="password_confirmation" v-model="passwordConfirmation" placeholder="Passwort bestätigen" required>
       </div>
       <div class="mb-3">
         <label for="captcha" class="form-label">Schreibe das Wort rückwärts: <strong>{{ captchaFruit }}</strong></label>
-        <input type="text" name="captcha" class="form-control" id="captcha" v-model="captcha" placeholder="Enter the fruit backward" required>
+        <input type="text" name="captcha" class="form-control" id="captcha" v-model="captcha" placeholder="Schreibe das Wort rückwärts" required>
       </div>
       <div class="mb-3 form-check" style="float:left;     display: flex;">
         <input style="    margin-top: 0;width: 30px;height: 30px;" type="checkbox" class="form-check-input" id="terms" v-model="termsAccepted" required>

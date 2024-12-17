@@ -178,15 +178,14 @@ Route::get('/edit-event/{id}', function ($id) {
 });
 
 
-
-// Group routes for API with a prefix
 Route::prefix('api')->group(function () {
     Route::get('/events', [ContentController::class, 'index']);
     Route::get('/events/{id}', [ContentController::class, 'getPostApi']);
+    Route::get('/events/filter/count', [ContentController::class, 'getPostCount']);
 
-
+    // Throttled routes
     Route::middleware('throttle:10|10,1')->group(function () {
-        Route::post('/login', [AuthController::class, 'login']);       
+        Route::post('/login', [AuthController::class, 'login']);
         Route::post('/register', [UserController::class, 'register']);
         Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail']);
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
