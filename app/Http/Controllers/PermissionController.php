@@ -10,45 +10,48 @@ use Illuminate\Support\Facades\DB;
 class PermissionController extends Controller
 {
     public function getUsersWithPermissions(Request $request)
-{
-    $page = $request->get('page', 1);
-    $perPage = $request->get('per_page', 100);
-    $searchName = $request->get('name', '');
-    $offset = ($page - 1) * $perPage;
-
-    // Fetch users with only required fields and their permissions
-    $users = User::select('id', 'firstname', 'name', 'email')
-        ->with(['permissions:id,name'])
-        ->when($searchName, function ($query) use ($searchName) {
-            $query->where('name', 'like', "%$searchName%");
-        })
-        ->offset($offset)
-        ->limit($perPage)
-        ->get();
-
-    // Transform to include decrypted email and required fields only
-    $usersTransformed = $users->map(function ($user) {
-        return [
-            'id' => $user->id,
-            'first_name' => $user->firstname,
-            'name' => $user->name,
-            'email' => Crypt::decryptString($user->email),
-            'permissions' => $user->permissions->map(function ($permission) {
-                return [
-                    'id' => $permission->id,
-                    'name' => $permission->name,
-                ];
-            }),
-        ];
-    });
-
-    $total = User::count();
-
-    return response()->json([
-        'users' => $usersTransformed,
-        'total' => $total,
-    ]);
-}
+    {
+        $page = $request->get('page', 1);
+        $perPage = $request->get('per_page', 100);
+        $searchName = $request->get('name', '');
+        $offset = ($page - 1) * $perPage;
+    
+        // Fetch users with only required fields and their permissions, ensuring they have verified email and activated account
+        $users = User::select('id', 'firstname', 'name', 'email')
+            ->with(['permissions:id,name'])
+            ->where('activated', true)
+            ->whereNotNull('email_verified_at')
+            ->when($searchName, function ($query) use ($searchName) {
+                $query->where('name', 'like', "%$searchName%");
+            })
+            ->offset($offset)
+            ->limit($perPage)
+            ->get();
+    
+        // Transform to include decrypted email and required fields only
+        $usersTransformed = $users->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'first_name' => $user->firstname,
+                'name' => $user->name,
+                'email' => Crypt::decryptString($user->email),
+                'permissions' => $user->permissions->map(function ($permission) {
+                    return [
+                        'id' => $permission->id,
+                        'name' => $permission->name,
+                    ];
+                }),
+            ];
+        });
+    
+        $total = User::where('activated', true)->whereNotNull('email_verified_at')->count();
+    
+        return response()->json([
+            'users' => $usersTransformed,
+            'total' => $total,
+        ]);
+    }
+    
 
 
     public function getPermissions(Request $request)

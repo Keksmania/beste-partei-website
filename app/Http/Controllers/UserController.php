@@ -102,7 +102,6 @@ class UserController extends Controller
         return response()->json(['message' => 'Benutzer wurde bestätigt.']);
     }
 
-
     public function getUsers(Request $request)
     {
         // Fetch query parameters for search and pagination
@@ -110,13 +109,15 @@ class UserController extends Controller
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 10);
     
-        // Query to fetch users with optional search by name
+        // Query to fetch users with verified email and activated accounts
         $query = User::query();
+        $query->where('activated', true)->whereNotNull('email_verified_at');
     
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('firstname', 'like', '%' . $search . '%')
-                  ->orWhere('name', 'like', '%' . $search . '%'); // Added email search
+                  ->orWhere('name', 'like', '%' . $search . '%')
+                  ->orWhere('email', 'like', '%' . $search . '%');
             });
         }
     
