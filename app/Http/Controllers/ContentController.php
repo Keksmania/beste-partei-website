@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Crypt;
 
 class ContentController extends Controller
 {
@@ -437,6 +439,84 @@ class ContentController extends Controller
             'message' => 'Event deleted successfully!',
         ]);
     }
+
+
+/**
+ * Mark a user as attending an event.
+ *
+ * @param Request $request
+ * @param int $eventId
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function markAttendance(Request $request, $eventId)
+{
+    $userId = $request->input('user_id'); // Get the user ID from the request
+    $event = Event::findOrFail($eventId);
+
+    // Attach the user to the event if not already marked as attending
+    $alreadyAttending = DB::table('event_user')
+        ->where('event_id', $eventId)
+        ->where('user_id', $userId)
+        ->exists();
+
+    if ($alreadyAttending) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User is already marked as attending this event.',
+        ], 400);
+    }
+
+    // Mark attendance
+    $event->users()->attach($userId, ['attended_at' => now()]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Attendance marked successfully!',
+    ]);
+}
+
+/**
+ * Remove a user from an event (unattend).
+ *
+ * @param Request $request
+ * @param int $eventId
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function removeAttendance(Request $request, $eventId)
+{
+    $userId = $request->input('user_id');
+    $event = Event::findOrFail($eventId);
+
+    // Detach the user from the event
+    $event->users()->detach($userId);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Attendance removed successfully.',
+    ]);
+}
+
+/**
+ * Get the list of attendees for an event.
+ *
+ * @param int $eventId
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function getAttendees($eventId)
+{
+    $event = Event::with('users:id,name,email')->findOrFail($eventId);
+
+    $event->users->transform(function ($user) {
+        $user->email = Crypt::decryptString($user->email);
+        return $user;
+    });
+
+    
+    return response()->json([
+        'success' => true,
+        'attendees' => $event->users,
+    ]);
+}
 
 
 

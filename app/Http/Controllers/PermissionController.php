@@ -10,31 +10,46 @@ use Illuminate\Support\Facades\DB;
 class PermissionController extends Controller
 {
     public function getUsersWithPermissions(Request $request)
-    {
-        $page = $request->get('page', 1);
-        $perPage = $request->get('per_page', 100);
-        $searchName = $request->get('name', '');
-        $offset = ($page - 1) * $perPage;
+{
+    $page = $request->get('page', 1);
+    $perPage = $request->get('per_page', 100);
+    $searchName = $request->get('name', '');
+    $offset = ($page - 1) * $perPage;
 
-        // Fetch users with their permissions
-        $users = User::with('permissions:id,name')
-            ->when($searchName, function ($query) use ($searchName) {
-                $query->where('name', 'like', "%$searchName%");
-            })
-            ->offset($offset)
-            ->limit($perPage)
-            ->get();
+    // Fetch users with only required fields and their permissions
+    $users = User::select('id', 'firstname', 'name', 'email')
+        ->with(['permissions:id,name'])
+        ->when($searchName, function ($query) use ($searchName) {
+            $query->where('name', 'like', "%$searchName%");
+        })
+        ->offset($offset)
+        ->limit($perPage)
+        ->get();
 
-        // Decrypt the email addresses
-        $users->transform(function ($user) {
-            $user->email = Crypt::decryptString($user->email);
-            return $user;
-        });
+    // Transform to include decrypted email and required fields only
+    $usersTransformed = $users->map(function ($user) {
+        return [
+            'id' => $user->id,
+            'first_name' => $user->firstname,
+            'name' => $user->name,
+            'email' => Crypt::decryptString($user->email),
+            'permissions' => $user->permissions->map(function ($permission) {
+                return [
+                    'id' => $permission->id,
+                    'name' => $permission->name,
+                ];
+            }),
+        ];
+    });
 
-        $total = User::count();
+    $total = User::count();
 
-        return response()->json(['users' => $users, 'total' => $total]);
-    }
+    return response()->json([
+        'users' => $usersTransformed,
+        'total' => $total,
+    ]);
+}
+
 
     public function getPermissions(Request $request)
     {

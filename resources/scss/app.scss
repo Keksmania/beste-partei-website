@@ -165,6 +165,10 @@ form{
   background-repeat: no-repeat;
 }
 
+.btn-sm{
+  width: 95px;
+}
+
 .background-container::before {
   content: '';
   position: absolute;
@@ -248,3 +252,34 @@ body {
   font-size: 14px; /* Smaller font for tabs on mobile */
   padding: 0.5rem 1rem;
 }
+
+.trash-area {
+  background-color: #ffe6e6;
+  border: 2px dashed #dc3545;
+  color: #dc3545;
+  font-weight: bold;
+}
+
+
+/* Ensure headers don't break into a new line when overflowing */
+h5 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.scroll-box {
+  overflow-y: auto;
+}
+/* Ensure list elements have more room for text and centered text */
+.list-group-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  padding: 5px 10px; /* Reduced padding for better height */
+  line-height: 1.5em;
+}
+
+

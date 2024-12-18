@@ -69,6 +69,19 @@ Route::middleware(['auth'])->group(function () {
         abort(403, 'Unauthorized');
     });
 
+    Route::get('/anwesenheit', function () {
+        $user = Auth::user();
+        if ($user && $user->hasPermission('anwesenheit')) {
+            return view('event-attendee-tracking');}
+        return response()->json([
+            'success' => false,
+            'message' => 'You do not have permission to remove attendance.',
+        ], 403);
+    });
+
+
+
+
     // Create post route
     Route::get('/createpost', function () {
         $user = Auth::user();
@@ -80,10 +93,18 @@ Route::middleware(['auth'])->group(function () {
 
     // API routes for managing permissions and users
     Route::prefix('api')->group(function () {
-        Route::get('/users', function (Request $request) {
+        Route::get('/users/permissions', function (Request $request) {
             $user = Auth::user();
             if ($user && $user->hasPermission('admin')) {
                 return (new PermissionController)->getUsersWithPermissions($request);
+            }
+            abort(403, 'Unauthorized');
+        });
+
+        Route::get('/users', function (Request $request) {
+            $user = Auth::user();
+            if ($user && $user->hasPermission('admin')) {
+                return (new UserController)->getUsers($request);
             }
             abort(403, 'Unauthorized');
         });
@@ -128,6 +149,32 @@ Route::middleware(['auth'])->group(function () {
             }
             abort(403, 'Unauthorized');
         });
+
+        Route::delete('/events/{eventId}/attendees', function ($eventId) {
+            $user = Auth::user();
+            if ($user && $user->hasPermission('anwesenheit')) {
+                return app(ContentController::class)->removeAttendance(request(), $eventId);
+            }
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to remove attendance.',
+            ], 403);
+        });
+        
+        Route::post('/events/{eventId}/attendees', function ($eventId) {
+            $user = Auth::user();
+            if ($user && $user->hasPermission('anwesenheit')) {
+                return app(ContentController::class)->markAttendance(request(), $eventId);
+            }
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to mark attendance.',
+            ], 403);
+        });
+    
+
+    
+        Route::get('/events/{eventId}/attendees', [ContentController::class, 'getAttendees']);
     });
     
     // API route for managing events

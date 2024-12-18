@@ -9,11 +9,19 @@ class Event extends Model
 {
     use HasFactory;
 
-    // Define the table name if not following Laravel's naming convention
     protected $table = 'events';
 
-    // Fillable fields
-    protected $fillable = ['name', 'date', 'description','image', 'thumbnail'];
+    protected $fillable = ['name', 'date', 'description', 'image', 'thumbnail'];
 
- 
+    /**
+     * Relationship: Users attending the event.
+     */
+
+    public function users()
+        {
+            return $this->belongsToMany(User::class, 'event_user')
+                        ->withTimestamps()
+                        ->withPivot('attended_at');
+        }
+
 }

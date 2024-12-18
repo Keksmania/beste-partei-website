@@ -24,8 +24,8 @@
               <td>{{ event.name }}</td>
               <td>{{ event.date }}</td>
               <td>
-                <button style="width: 6.5em;" @click="editEvent(event.id)" class="btn btn-warning btn-sm me-2">Bearbeiten</button>
-                <button style="width: 6.5em;" @click="confirmDelete(event.id)" class="btn btn-danger btn-sm">Löschen</button>
+                <button  @click="editEvent(event.id)" class="btn btn-warning btn-sm me-2">Bearbeiten</button>
+                <button  @click="confirmDelete(event.id)" class="btn btn-danger btn-sm">Löschen</button>
               </td>
             </tr>
           </tbody>

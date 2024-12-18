@@ -47,6 +47,11 @@
                             </a>
                         </li>
                         <li>
+                            <a class="dropdown-item {{ Auth::user()->hasPermission('anwesenheit') ? '' : 'disabled' }}" href="{{ url('/anwesenheit') }}">
+                                Anwesenheit verwalten
+                            </a>
+                        </li>
+                        <li>
                             <a class="dropdown-item {{ Auth::user()->hasPermission('admin') ? '' : 'disabled' }}" href="{{ url('/registration-list') }}">
                                 Registrierungen genehmigen
                             </a>

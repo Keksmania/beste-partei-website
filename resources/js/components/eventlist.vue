@@ -1,6 +1,6 @@
 <template>
   <!-- Filters -->
-  <div style="display: flex; gap: 1em; margin: 1em 0; justify-content: center;">
+  <div class="filters-container">
     <!-- Year Dropdown -->
     <select v-model="selectedYear" @change="applyFilters" class="filter-dropdown">
       <option value="" disabled selected>Jahr auswählen</option>
@@ -59,7 +59,6 @@
     </div>
   </div>
 </template>
-
 
 
 <script setup>
@@ -165,7 +164,7 @@ const moveLeft = () => {
 };
 
 const moveRight = async () => {
-  if (position.value / 16 < events.value.length - 3) {
+  if (position.value / 16 < events.value.length) {
     position.value += 16;
   } else {
     if (currentPage.value * limit < totalEvents.value) {
@@ -183,9 +182,8 @@ onMounted(() => {
 });
 </script>
 
+<style scoped>
 
-
-<style>
 .filter-dropdown {
   padding: 0.5em;
   font-size: 1em;
@@ -197,7 +195,6 @@ onMounted(() => {
 .btn {
   padding: 0.5em 1em;
   border: none;
-  background-color: #007BFF;
   color: white;
   cursor: pointer;
   border-radius: 5px;
@@ -209,5 +206,25 @@ onMounted(() => {
 
 .btn:hover {
   background-color: #0056b3;
+}
+.filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  margin: 1em 0;
+  justify-content: center;
+}
+
+
+.event-container {
+  display: flex;
+  transition: transform 0.3s ease;
+}
+
+
+
+
+.arrow:hover {
+  color: #0056b3;
 }
 </style>

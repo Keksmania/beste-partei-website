@@ -71,7 +71,7 @@
         <h5>Berechtigungen des Benutzers</h5>
         <div
           class="list-group overflow-auto border p-3"
-          style="min-height: 300px;"
+          style="min-height: 300px; max-height: 300px;"
           @dragover.prevent
           @drop="dropPermission"
           @touchmove="touchMove"
@@ -109,8 +109,9 @@
       </div>
     </div>
   </div>
-  
 </template>
+
+
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
@@ -126,6 +127,7 @@ const userNameSearch = ref("");
 const permissionSearch = ref("");
 const currentPage = ref(1);
 const totalPages = ref(1);
+const itemsPerPage = ref(10); // Reduce items per page
 
 const filteredUsers = computed(() =>
   users.value.filter(
@@ -157,11 +159,11 @@ const onUserSearchInput = () => {
 
 const fetchUsers = async () => {
   try {
-    const { data } = await axios.get("/api/users", {
-      params: { page: currentPage.value, per_page: 100, name: userNameSearch.value },
+    const { data } = await axios.get("/api/users/permissions", {
+      params: { page: currentPage.value, per_page: itemsPerPage.value, name: userNameSearch.value },
     });
     users.value = data.users;
-    totalPages.value = Math.ceil(data.total / 100);
+    totalPages.value = Math.ceil(data.total / itemsPerPage.value);
     if (users.value.length > 0) {
       selectUser(users.value[0]);
     }
@@ -252,7 +254,6 @@ const dropToTrash = async () => {
   }
   resetDraggingState();
 };
-
 
 const resetDraggingState = () => {
   isTouchDragging.value = false;

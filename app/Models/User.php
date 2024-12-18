@@ -9,40 +9,21 @@ use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'firstname',
         'name',
         'email',
         'password',
         'email_hash',
-        'verification_key', 
+        'verification_key',
         'email_verified_at',
         'activated'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -52,24 +33,33 @@ class User extends Authenticatable
     }
 
     /**
-     * Define the relationship between users and permissions.
+     * Relationship: Events the user is attending.
      */
-    public function permissions()
-    {
-        return $this->belongsToMany(Permission::class, 'user_permissions', 'user_id', 'permission_id');
-    }
 
-    /**
-     * Check if the user has a specific permission.
-     *
-     * @param string $permissionName
-     * @return bool
-     */
-    public function hasPermission($permissionName)
-    {
-        return DB::table('user_permissions_view')
-            ->where('user_id', $this->id)
-            ->where('permission_name', $permissionName)
-            ->exists();
-    }
+
+         public function events()
+        {
+            return $this->belongsToMany(Event::class, 'event_user')
+                        ->withTimestamps()
+                        ->withPivot('attended_at');
+        }
+        public function permissions()
+        {
+            return $this->belongsToMany(Permission::class, 'user_permissions', 'user_id', 'permission_id');
+        }
+    
+        /**
+         * Check if the user has a specific permission.
+         *
+         * @param string $permissionName
+         * @return bool
+         */
+        public function hasPermission($permissionName)
+        {
+            return DB::table('user_permissions_view')
+                ->where('user_id', $this->id)
+                ->where('permission_name', $permissionName)
+                ->exists();
+        }
+    
 }
