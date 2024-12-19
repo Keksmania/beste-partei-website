@@ -31,6 +31,10 @@ const email = ref('');
 const password = ref('');
 const errorMessage = ref('');
 
+// Get the key parameter from the URL if it exists
+const urlParams = new URLSearchParams(window.location.search);
+const key = urlParams.get('key');
+
 // Submit form function
 const submitForm = async () => {
   try {
@@ -40,7 +44,12 @@ const submitForm = async () => {
       _token: csrfToken.value,
     });
 
-    window.location.href = '/';
+    // Redirect to the intended URL or home page
+    if (key) {
+      window.location.href = `/api/events/attend/markAttendanceQr?key=${key}`;
+    } else {
+      window.location.href = '/';
+    }
   } catch (error) {
     errorMessage.value = error.response ? error.response.data.message : error.message;
     setTimeout(() => (errorMessage.value = ''), 3500);

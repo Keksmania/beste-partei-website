@@ -11,7 +11,7 @@ class Event extends Model
 
     protected $table = 'events';
 
-    protected $fillable = ['name', 'date', 'description', 'image', 'thumbnail'];
+    protected $fillable = ['name', 'date', 'description', 'image', 'thumbnail', 'key'];
 
     /**
      * Relationship: Users attending the event.

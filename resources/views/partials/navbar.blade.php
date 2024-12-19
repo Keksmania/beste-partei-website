@@ -33,12 +33,12 @@
                     <ul class="dropdown-menu" aria-labelledby="verwaltungDropdown">
                         <li>
                             <a class="dropdown-item {{ Auth::user()->hasPermission('posten') ? '' : 'disabled' }}" href="{{ url('/createpost') }}">
-                                Post erstellen
+                                Event erstellen
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item {{ Auth::user()->hasPermission('posten') ? '' : 'disabled' }}" href="{{ url('/list-events') }}">
-                                Posts verwalten
+                                Events verwalten
                             </a>
                         </li>
                         <li>

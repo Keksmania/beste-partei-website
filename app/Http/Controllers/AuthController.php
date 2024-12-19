@@ -14,7 +14,6 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class AuthController extends Controller
 {
-   
     public function login(Request $request)
     {
         $request->validate([
@@ -45,10 +44,9 @@ class AuthController extends Controller
             if (Hash::check($request->password, $user->password)) {
                 Auth::login($user);
                 $request->session()->put('user', $user);
-                return response()->json([
-                    'message' => 'Login successful',
-                    'user' => $user,
-                ], 200);
+    
+    
+                return redirect('/');
             }
         }
     
@@ -56,7 +54,6 @@ class AuthController extends Controller
             'message' => 'Invalid email or password',
         ], 401); // Unauthorized response
     }
-
 
     
 

@@ -60,10 +60,12 @@
   </div>
 </template>
 
-
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+
+// Include SweetAlert
+import Swal from 'sweetalert2';
 
 // State variables
 const events = ref([]);
@@ -175,6 +177,33 @@ const moveRight = async () => {
   }
 };
 
+// Check for 'result' parameter and show SweetAlert
+const getQueryParams = () => {
+  let params = {};
+  window.location.search.substring(1).split("&").forEach(pair => {
+    pair = pair.split("=");
+    params[pair[0]] = decodeURIComponent(pair[1] || "");
+  });
+  return params;
+};
+
+const params = getQueryParams();
+if (params.result) {
+  if (params.result === 'success') {
+    Swal.fire({
+      title: 'Erfolg!',
+      text: 'Sie wurden erfolgreich als anwesend markiert.',
+      icon: 'success'
+    });
+  } else if (params.result === 'fail') {
+    Swal.fire({
+      title: 'Fehler!',
+      text: 'Ihre Anwesenheit konnte nicht markiert werden.',
+      icon: 'error'
+    });
+  }
+}
+
 // Lifecycle hooks
 onMounted(() => {
   generateYears();
@@ -183,7 +212,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
 .filter-dropdown {
   padding: 0.5em;
   font-size: 1em;
@@ -215,14 +243,10 @@ onMounted(() => {
   justify-content: center;
 }
 
-
 .event-container {
   display: flex;
   transition: transform 0.3s ease;
 }
-
-
-
 
 .arrow:hover {
   color: #0056b3;

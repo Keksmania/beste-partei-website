@@ -214,6 +214,16 @@ Route::get('/list-events', function (Request $request) {
     abort(403, 'Unauthorized');
 });
 
+
+Route::get('/events/{eventId}/download-qrcode',function($eventId){
+    $user = Auth::user();
+    if ($user && $user->hasPermission('posten')) {
+        return (new ContentController)->downloadQrCode($eventId);
+    }
+
+})->name('events.downloadQrCode');
+
+
 Route::get('/edit-event/{id}', function ($id) { 
     $user = Auth::user();
     if ($user && $user->hasPermission('posten')) {
@@ -225,14 +235,23 @@ Route::get('/edit-event/{id}', function ($id) {
 });
 
 
+
+
 Route::prefix('api')->group(function () {
+    
     Route::get('/events', [ContentController::class, 'index']);
     Route::get('/events/{id}', [ContentController::class, 'getPostApi']);
     Route::get('/events/filter/count', [ContentController::class, 'getPostCount']);
 
     // Throttled routes
     Route::middleware('throttle:10|10,1')->group(function () {
-        Route::post('/login', [AuthController::class, 'login']);
+        Route::middleware(['web'])->group(function () {
+            Route::get('/events/attend/markAttendanceQr', [ContentController::class, 'markAttendanceQr']);
+            Route::post('/login', [AuthController::class, 'login']);
+        });
+        
+
+        
         Route::post('/register', [UserController::class, 'register']);
         Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail']);
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);

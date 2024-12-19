@@ -5,14 +5,21 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Label\Font\OpenSans;
+use Endroid\QrCode\Label\LabelAlignment;
 
 class ContentController extends Controller
 {
-    /**
+    /**event_key
      * Handle the API request for events.
      *
      * @param Request $request
@@ -129,7 +136,10 @@ class ContentController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+
+  
+     
+     public function store(Request $request)
      {
          $request->validate([
              'name' => 'required|string|max:255',
@@ -252,23 +262,63 @@ class ContentController extends Controller
              }
          }
      
+         // Generate a unique key for the event
+         $key = Str::uuid();
+     
          $event = Event::create([
              'name' => $request->name,
              'date' => $request->date,
              'description' => $request->description,
              'image' => $imagePath,
              'thumbnail' => $thumbnailPath,
+             'key' => $key,
          ]);
+     
+         // Create the QR code directory if it does not exist
+         $qrCodeDir = public_path('images/qrcode');
+
+         // Generate the QR code
+         $url = url("/api/events/attend/markAttendanceQr?key={$key}");
+         $builder = new Builder(
+            writer: new PngWriter(),
+            writerOptions: [],
+            validateResult: false,
+            data: $url ,
+            encoding: new Encoding('UTF-8'),
+            errorCorrectionLevel: ErrorCorrectionLevel::High,
+            size: 300,
+            margin: 10,
+            roundBlockSizeMode: RoundBlockSizeMode::Margin,
+            labelText: 'Anwesenheit bestätigen',
+            labelFont: new OpenSans(20),
+            labelAlignment: LabelAlignment::Center
+        );
+        
+        $result = $builder->build();
+     
+         $qrCodePath = $qrCodeDir . '/' . $key . '.png';
+         $result->saveToFile($qrCodePath);
      
          return response()->json([
              'success' => true,
              'message' => 'Event created successfully!',
              'event' => $event->makeHidden(['image']), // Exclude the `image` attribute if necessary
+             'qr_code_url' => asset('images/qrcode/' . $key . '.png'),
          ], 201);
      }
+     
 
-
-
+     public function downloadQrCode($eventId)
+     {
+         $event = Event::findOrFail($eventId);
+         $qrCodePath = public_path('images/qrcode/' . $event->key . '.png');
+     
+         if (!file_exists($qrCodePath)) {
+             abort(404, 'QR Code not found');
+         }
+     
+         return response()->download($qrCodePath, $event->name . '_qrcode.png');
+     }
 
 
 
@@ -441,40 +491,51 @@ class ContentController extends Controller
     }
 
 
-/**
- * Mark a user as attending an event.
- *
- * @param Request $request
- * @param int $eventId
- * @return \Illuminate\Http\JsonResponse
- */
-public function markAttendance(Request $request, $eventId)
-{
-    $userId = $request->input('user_id'); // Get the user ID from the request
-    $event = Event::findOrFail($eventId);
 
-    // Attach the user to the event if not already marked as attending
-    $alreadyAttending = DB::table('event_user')
-        ->where('event_id', $eventId)
-        ->where('user_id', $userId)
-        ->exists();
-
-    if ($alreadyAttending) {
-        return response()->json([
-            'success' => false,
-            'message' => 'User is already marked as attending this event.',
-        ], 400);
+    public function markAttendanceQr(Request $request)
+    {
+        $key = $request->input('key');
+    
+        if ($key) {
+            $event = Event::where("key", $key)->first();
+    
+            if ($event) {
+                // Check if the event date is today
+                $eventDate = $event->date;
+                $currentDate = now()->format('Y-m-d');
+    
+                if ($eventDate !== $currentDate) {
+                    return redirect('/?result=fail');
+                }
+    
+                if (Auth::guest()) {
+                    // Store the intended URL and redirect to login with the key parameter
+                    return redirect()->guest(route('login', ['key' => $key]));
+                } else {
+                    // User is logged in, mark attendance
+                    $userId = Auth::id();
+                    // Check if the user is already marked as attending
+                    $alreadyAttending = DB::table('event_user')
+                        ->where('event_id', $event->id)
+                        ->where('user_id', $userId)
+                        ->exists();
+    
+                    if ($alreadyAttending) {
+                        return redirect('/?result=fail');
+                    }
+    
+                    // Mark attendance
+                    $event->users()->attach($userId, ['attended_at' => now()]);
+    
+                    return redirect('/?result=success');
+                }
+            } else {
+                return redirect('/?result=fail');
+            }
+        }
+    
+        return redirect('/?result=fail');
     }
-
-    // Mark attendance
-    $event->users()->attach($userId, ['attended_at' => now()]);
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Attendance marked successfully!',
-    ]);
-}
-
 /**
  * Remove a user from an event (unattend).
  *
