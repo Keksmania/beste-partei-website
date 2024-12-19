@@ -67,7 +67,7 @@ class ContentController extends Controller
         return response()->json([
             'events' => $eventsTransformed,
             'current_page' => $page,
-            'total_pages' => ceil($total / $limit),
+            'total' => $total,
         ]);
     }
     
@@ -489,6 +489,33 @@ class ContentController extends Controller
             'message' => 'Event deleted successfully!',
         ]);
     }
+
+    public function markAttendance(Request $request, $eventId)
+{
+    $userId = $request->input('user_id');
+    $event = Event::findOrFail($eventId);
+
+    // Check if the user is already marked as attending
+    $alreadyAttending = DB::table('event_user')
+        ->where('event_id', $event->id)
+        ->where('user_id', $userId)
+        ->exists();
+
+    if ($alreadyAttending) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User is already marked as attending.',
+        ], 400);
+    }
+
+    // Mark attendance
+    $event->users()->attach($userId, ['attended_at' => now()]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Attendance marked successfully.',
+    ]);
+}
 
 
 

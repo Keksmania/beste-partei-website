@@ -139,12 +139,13 @@
               d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"
             />
           </svg>
-          Drop here to remove user from event
+          Hierhin ziehen um Benutzer zu entfernen
         </div>
       </div>
     </div>
   </div>
 </template>
+
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import axios from "axios";
@@ -190,10 +191,10 @@ const fetchEvents = async () => {
 const fetchUsers = async () => {
   try {
     const { data } = await axios.get("/api/users", {
-      params: { search: userSearch.value, page: currentPage.value, per_page: events.value.length },
+      params: { search: userSearch.value, page: currentPage.value, per_page: maxItemsPerPage },
     });
     users.value = data.users || [];
-    totalPages.value = Math.ceil((data.total || 0) / events.value.length);
+    totalPages.value = Math.ceil((data.total || 0) / maxItemsPerPage);
   } catch (error) {
     console.error("Error fetching users:", error);
     users.value = [];
@@ -259,13 +260,18 @@ const removeUserFromEvent = async (event) => {
 
 // Pagination handlers
 const goToEventPage = (page) => {
-  eventCurrentPage.value = page;
-  fetchEvents();
+  if (page >= 1 && page <= eventTotalPages.value) {
+    eventCurrentPage.value = page;
+    console.log("test");
+        fetchEvents();
+  }
 };
 
 const goToPage = (page) => {
-  currentPage.value = page;
-  fetchUsers();
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+    fetchUsers();
+  }
 };
 
 const selectEvent = (event) => {
@@ -302,3 +308,10 @@ const pagesToShow = (totalPages, currentPage) => {
   return pages;
 };
 </script>
+
+<style scoped>
+.scroll-box {
+  max-height: 400px;
+  overflow-y: auto;
+}
+</style>
