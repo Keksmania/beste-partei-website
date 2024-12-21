@@ -10,7 +10,7 @@
         "endroid/qr-code": "^6.0",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
-        "mailersend/laravel-driver": "^2.7",
+        "mailjet/laravel-mailjet": "*",
         "realrashid/sweet-alert": "^7.2"
     },
     "require-dev": {

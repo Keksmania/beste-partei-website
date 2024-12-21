@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Crypt;
 use App\Mail\ResetPasswordMail;
 use RealRashid\SweetAlert\Facades\Alert; 
+use App\Jobs\SendEmailJob;
 
 class AuthController extends Controller
 {
@@ -144,7 +145,8 @@ public function logout(Request $request)
         // Send reset email
         if (!config('app.debug')) {
             $resetUrl = url("/reset-password?token={$resetToken}&email={$email}");
-            Mail::to(Crypt::decryptString($user->email))->send(new ResetPasswordMail($user->firstname, $resetUrl));
+            $mailable = new ResetPasswordMail($user->firstname, $resetUrl);
+            SendEmailJob::dispatch(Crypt::decryptString($user->email), $mailable);
         }
         return response()->json([
             'status' => 'success',

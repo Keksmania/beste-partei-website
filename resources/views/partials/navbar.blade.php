@@ -1,3 +1,7 @@
+
+@php
+    use Illuminate\Support\Facades\Auth;
+@endphp
 <nav class="navbar navbar-expand-lg navbar-light bg-primary">
     <a style="margin-left:1em" class="navbar-brand" href="/">Studentische Politik-Revolution</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">

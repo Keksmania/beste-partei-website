@@ -125,5 +125,12 @@ return [
 
 
 
+    'aliases' => [
+    
+        'Mailjet' => Mailjet\LaravelMailjet\Facades\Mailjet::class,
+        
+    ]
+
+
 
 ];

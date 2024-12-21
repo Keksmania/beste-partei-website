@@ -8,6 +8,7 @@ use App\Mail\EmailVerificationMail;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
+use App\Jobs\SendEmailJob;
 
 class UserController extends Controller
 {
@@ -54,7 +55,8 @@ class UserController extends Controller
 
         if (!config('app.debug')) {
             $verificationUrl = url("/verify-email?key={$user->verification_key}");
-            Mail::to($email)->send(new EmailVerificationMail($user->firstname, $verificationUrl)); // Use firstname in email
+            $mailable = new EmailVerificationMail($user->firstname, $verificationUrl);
+            SendEmailJob::dispatch($email, $mailable);
         }
         return response()->json([
             'message' => 'Benutzer wurde erstellt',
