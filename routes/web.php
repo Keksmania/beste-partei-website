@@ -31,12 +31,10 @@ Route::get('/Partei-Programm', function () {
     return view('partei-programm');
 });
 
-
 // Login
 Route::get('/login', function () {
     return view('login');
 })->name('login');
-
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/register', function () {
@@ -46,17 +44,14 @@ Route::middleware(['guest'])->group(function () {
 
 Route::get('/registration-list', function () {
     $user = Auth::user();
-        if ($user && $user->hasPermission('admin')) {
-            return view('approve-registration');
-        }
-        abort(403, 'Unauthorized');
-   
+    if ($user && $user->hasPermission('admin')) {
+        return view('approve-registration');
+    }
+    abort(403, 'Unauthorized');
 });
-
 
 // Post content
 Route::get('/post/{id}', [ContentController::class, 'getPost']);
-
 
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
@@ -72,15 +67,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/anwesenheit', function () {
         $user = Auth::user();
         if ($user && $user->hasPermission('anwesenheit')) {
-            return view('event-attendee-tracking');}
+            return view('event-attendee-tracking');
+        }
         return response()->json([
             'success' => false,
             'message' => 'You do not have permission to remove attendance.',
         ], 403);
     });
-
-
-
 
     // Create post route
     Route::get('/createpost', function () {
@@ -160,7 +153,7 @@ Route::middleware(['auth'])->group(function () {
                 'message' => 'You do not have permission to remove attendance.',
             ], 403);
         });
-        
+
         Route::post('/events/{eventId}/attendees', function ($eventId) {
             $user = Auth::user();
             if ($user && $user->hasPermission('anwesenheit')) {
@@ -171,15 +164,13 @@ Route::middleware(['auth'])->group(function () {
                 'message' => 'You do not have permission to mark attendance.',
             ], 403);
         });
-    
 
-    
         Route::get('/events/{eventId}/attendees', [ContentController::class, 'getAttendees']);
     });
-    
-    // API route for managing events
+
+    // API route for managing posts and events
     Route::prefix('api')->group(function () {
-        Route::post('/events', function (Request $request) {
+        Route::post('/posts', function (Request $request) {
             $user = Auth::user();
             if ($user && $user->hasPermission('posten')) {
                 return (new ContentController)->store($request);
@@ -187,16 +178,15 @@ Route::middleware(['auth'])->group(function () {
             abort(403, 'Unauthorized');
         });
 
-    
-        Route::post('/events/{id}', function (Request $request, $id) {
+        Route::post('/posts/{id}', function (Request $request, $id) {
             $user = Auth::user();
             if ($user && $user->hasPermission('posten')) {
                 return (new ContentController)->update($request, $id);
             }
             abort(403, 'Unauthorized');
         });
-    
-        Route::delete('/events/{id}', function ($id) {
+
+        Route::delete('/posts/{id}', function ($id) {
             $user = Auth::user();
             if ($user && $user->hasPermission('posten')) {
                 return (new ContentController)->destroy($id);
@@ -204,8 +194,8 @@ Route::middleware(['auth'])->group(function () {
             abort(403, 'Unauthorized');
         });
     });
-    
 });
+
 Route::get('/list-events', function (Request $request) {
     $user = Auth::user();
     if ($user && $user->hasPermission('posten')) {
@@ -214,31 +204,22 @@ Route::get('/list-events', function (Request $request) {
     abort(403, 'Unauthorized');
 });
 
-
-Route::get('/events/{eventId}/download-qrcode',function($eventId){
+Route::get('/events/{eventId}/download-qrcode', function ($eventId) {
     $user = Auth::user();
     if ($user && $user->hasPermission('posten')) {
         return (new ContentController)->downloadQrCode($eventId);
     }
-
 })->name('events.downloadQrCode');
 
-
-Route::get('/edit-event/{id}', function ($id) { 
+Route::get('/edit-event/{id}', function ($id) {
     $user = Auth::user();
     if ($user && $user->hasPermission('posten')) {
         return view('edit-event', ['eventId' => $id]);
     }
     abort(403, 'Unauthorized');
-
-
 });
 
-
-
-
 Route::prefix('api')->group(function () {
-    
     Route::get('/events', [ContentController::class, 'index']);
     Route::get('/events/{id}', [ContentController::class, 'getPostApi']);
     Route::get('/events/filter/count', [ContentController::class, 'getPostCount']);
@@ -249,21 +230,15 @@ Route::prefix('api')->group(function () {
             Route::get('/events/attend/markAttendanceQr', [ContentController::class, 'markAttendanceQr']);
             Route::post('/login', [AuthController::class, 'login']);
         });
-        
 
-        
         Route::post('/register', [UserController::class, 'register']);
         Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail']);
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     });
 });
 
-
-
-
 // Logout route
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
 
 Route::view('/registration-success', 'registration-success')->name('registration-success');
 Route::view('/email-verification-success', 'email-verification-success')->name('email-verification-success');

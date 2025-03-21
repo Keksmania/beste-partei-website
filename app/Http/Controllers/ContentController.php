@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Event;
+use App\Models\Post;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -33,10 +34,12 @@ class ContentController extends Controller
         $year = $request->query('year', null);
         $month = $request->query('month', null);
     
-        $eventsQuery = Event::query();
+        $eventsQuery = Event::with('post'); // Ensure the post relationship is eager-loaded
     
         if ($search) {
-            $eventsQuery->where('name', 'like', '%' . $search . '%');
+            $eventsQuery->whereHas('post', function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            });
         }
         if ($year) {
             $eventsQuery->whereYear('date', $year);
@@ -53,15 +56,15 @@ class ContentController extends Controller
     
         // Transform events to include the image URL
         $eventsTransformed = $events->map(function ($event) {
+           if(isset($event->post)){
             return [
-                'id' => $event->id,
-                'name' => $event->name,
+                'id' => $event->post_id,
+                'name' => $event->post->name,
                 'date' => $event->date,
-                'description' => $event->description,
-                'image' => $event->thumbnail
-                    ? asset($event->thumbnail)
+                'image' => $event->post->thumbnail
+                    ? asset($event->post->thumbnail)
                     : url('/images/1.jpg'), // Placeholder image
-            ];
+            ];}
         });
     
         return response()->json([
@@ -105,26 +108,35 @@ class ContentController extends Controller
      * @param Request $request
      * @return \Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function getPost(Request $request)
-    {
-        $event = Event::where("id", $request->route("id"))->first();
-        if ($event) {
-            return view("post", ["event" => $event]);
-        } else {
-            abort(403, "Post not found!");
-        }
-    }
+
+     public function getPost(Request $request)
+     {
+         $postId = $request->route("id");
+         $post = Post::find($postId);
+     
+         if ($post) {
+             // Fetch the event associated with the post
+             $event = Event::where('post_id', $postId)->first();
+     
+             // Determine the date to use
+             $post->date = $event ? $event->date : $post->created_at;
+     
+             return view("post", [
+                 "post" => $post,
+             ]);
+         } else {
+             abort(403, "Post not found!");
+         }
+     }
 
     public function getPostApi(Request $request)
     {
-
-            $event = Event::where("id", $request->route("id"))->first();
-            if ($event) {
-                return response()->json(["event" => $event]);
-            } else {
-                abort(403, "Post not found!");
-            }
-        
+        $post = Post::with('event')->where("id", $request->route("id"))->first();
+        if ($post) {
+            return response()->json(["post" => $post]);
+        } else {
+            abort(403, "Post not found!");
+        }
     }
 
 
@@ -143,9 +155,10 @@ class ContentController extends Controller
      {
          $request->validate([
              'name' => 'required|string|max:255',
-             'date' => 'required|date',
+             'date' => 'required_if:is_event,true|date',
              'description' => 'required|string',
              'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+             'is_event' => 'nullable|boolean',
          ]);
      
          $imagePath = null;
@@ -262,48 +275,61 @@ class ContentController extends Controller
              }
          }
      
-         // Generate a unique key for the event
-         $key = Str::uuid();
-     
-         $event = Event::create([
+         // Create the post
+         $post = Post::create([
              'name' => $request->name,
-             'date' => $request->date,
              'description' => $request->description,
              'image' => $imagePath,
              'thumbnail' => $thumbnailPath,
-             'key' => $key,
          ]);
      
-         // Create the QR code directory if it does not exist
-         $qrCodeDir = public_path('images/qrcode');
-
-         // Generate the QR code
-         $url = url("/api/events/attend/markAttendanceQr?key={$key}");
-         $builder = new Builder(
-            writer: new PngWriter(),
-            writerOptions: [],
-            validateResult: false,
-            data: $url ,
-            encoding: new Encoding('UTF-8'),
-            errorCorrectionLevel: ErrorCorrectionLevel::High,
-            size: 300,
-            margin: 10,
-            roundBlockSizeMode: RoundBlockSizeMode::Margin,
-            labelText: 'Anwesenheit bestätigen',
-            labelFont: new OpenSans(20),
-            labelAlignment: LabelAlignment::Center
-        );
-        
-        $result = $builder->build();
+         if ($request->is_event) {
+             // Generate a unique key for the event
+             $key = Str::uuid();
      
-         $qrCodePath = $qrCodeDir . '/' . $key . '.png';
-         $result->saveToFile($qrCodePath);
+             $event = Event::create([
+                 'post_id' => $post->id,
+                 'date' => $request->date,
+                 'key' => $key,
+             ]);
+     
+             // Create the QR code directory if it does not exist
+             $qrCodeDir = public_path('images/qrcode');
+     
+             // Generate the QR code
+             $url = url("/api/events/attend/markAttendanceQr?key={$key}");
+             $builder = new Builder(
+                writer: new PngWriter(),
+                writerOptions: [],
+                validateResult: false,
+                data: $url ,
+                encoding: new Encoding('UTF-8'),
+                errorCorrectionLevel: ErrorCorrectionLevel::High,
+                size: 300,
+                margin: 10,
+                roundBlockSizeMode: RoundBlockSizeMode::Margin,
+                labelText: 'Anwesenheit bestätigen',
+                labelFont: new OpenSans(20),
+                labelAlignment: LabelAlignment::Center
+            );
+            
+            $result = $builder->build();
+     
+             $qrCodePath = $qrCodeDir . '/' . $key . '.png';
+             $result->saveToFile($qrCodePath);
+     
+             return response()->json([
+                 'success' => true,
+                 'message' => 'Event created successfully!',
+                 'event' => $event->makeHidden(['image']), // Exclude the `image` attribute if necessary
+                 'qr_code_url' => asset('images/qrcode/' . $key . '.png'),
+             ], 201);
+         }
      
          return response()->json([
              'success' => true,
-             'message' => 'Event created successfully!',
-             'event' => $event->makeHidden(['image']), // Exclude the `image` attribute if necessary
-             'qr_code_url' => asset('images/qrcode/' . $key . '.png'),
+             'message' => 'Post created successfully!',
+             'post' => $post,
          ], 201);
      }
      
@@ -326,15 +352,17 @@ class ContentController extends Controller
 {
     $request->validate([
         'name' => 'required|string|max:255',
-        'date' => 'required|date',
+        'date' => 'required_if:is_event,true|date',
         'description' => 'required|string',
         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        'is_event' => 'nullable|boolean',
     ]);
 
-    $event = Event::findOrFail($id);
+    $post = Post::findOrFail($id);
+    $event = $post->event;
 
-    $imagePath = $event->image;
-    $thumbnailPath = $event->thumbnail;
+    $imagePath = $post->image;
+    $thumbnailPath = $post->thumbnail;
 
     if ($request->hasFile('image')) {
         // Delete old image and thumbnail if they exist
@@ -445,18 +473,36 @@ class ContentController extends Controller
         }
     }
 
-    $event->update([
+    $post->update([
         'name' => $request->name,
-        'date' => $request->date,
         'description' => $request->description,
         'image' => $imagePath,
         'thumbnail' => $thumbnailPath,
     ]);
 
+    if ($request->is_event) {
+        if ($event) {
+            $event->update([
+                'date' => $request->date,
+            ]);
+        } else {
+            // Generate a unique key for the event
+            $key = Str::uuid();
+
+            Event::create([
+                'post_id' => $post->id,
+                'date' => $request->date,
+                'key' => $key,
+            ]);
+        }
+    } elseif ($event) {
+        $event->delete();
+    }
+
     return response()->json([
         'success' => true,
-        'message' => 'Event updated successfully!',
-        'event' => $event->makeHidden(['image']),
+        'message' => 'Post updated successfully!',
+        'post' => $post,
     ]);
 }
 

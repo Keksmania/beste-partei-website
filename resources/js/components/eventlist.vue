@@ -47,7 +47,7 @@
         }"
       >
         <div class="event-image">
-          <img :src="event.imageSrc" alt="Image">
+          <img :src="event.image ? event.image : '/images/1.jpg'" alt="Image">
           <div class="event-date">{{ new Date(event.date).toLocaleDateString() }}</div>
         </div>
         <div class="event-name"><h5>{{ event.name }}</h5></div>
@@ -132,10 +132,7 @@ const fetchEvents = async (reset = true) => {
     }
   });
 
-  const loadedEvents = response.data.events.map(event => ({
-    ...event,
-    imageSrc: event.image || '/images/1.jpg',
-  }));
+  const loadedEvents = response.data.events.filter(event => event !== null);
 
   events.value.push(...loadedEvents);
   totalEvents.value = response.data.total;

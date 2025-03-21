@@ -11,17 +11,20 @@ class Event extends Model
 
     protected $table = 'events';
 
-    protected $fillable = ['name', 'date', 'description', 'image', 'thumbnail', 'key'];
+    protected $fillable = ['post_id', 'date', 'key'];
 
     /**
      * Relationship: Users attending the event.
      */
-
     public function users()
-        {
-            return $this->belongsToMany(User::class, 'event_user')
-                        ->withTimestamps()
-                        ->withPivot('attended_at');
-        }
+    {
+        return $this->belongsToMany(User::class, 'event_user')
+                    ->withTimestamps()
+                    ->withPivot('attended_at');
+    }
 
+    public function post()
+    {
+        return $this->belongsTo(Post::class);
+    }
 }

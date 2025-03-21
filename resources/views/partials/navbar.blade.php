@@ -37,7 +37,7 @@
                     <ul class="dropdown-menu" aria-labelledby="verwaltungDropdown">
                         <li>
                             <a class="dropdown-item {{ Auth::user()->hasPermission('posten') ? '' : 'disabled' }}" href="{{ url('/createpost') }}">
-                                Event erstellen
+                                Post erstellen
                             </a>
                         </li>
                         <li>

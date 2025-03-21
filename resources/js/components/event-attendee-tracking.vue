@@ -20,7 +20,7 @@
             :class="{ 'active': event.id === selectedEvent?.id }"
             @click="selectEvent(event)"
           >
-            {{ event.name }} ({{ formatDate(event.date) }})
+            {{ event.post.name }} ({{ formatDate(event.date) }})
           </div>
         </div>
         <!-- Pagination -->
@@ -93,7 +93,7 @@
       <div class="col-md-4 mb-3 d-flex flex-column">
         <!-- Attendee List -->
         <div class="flex-grow-1">
-          <h5>Anwesenheit für "{{ selectedEvent?.name || 'No Event Selected' }}"</h5>
+          <h5>Anwesenheit für "{{ selectedEvent?.post.name || 'No Event Selected' }}"</h5>
           <input
           type="text"
           class="form-control mb-3"
@@ -167,6 +167,7 @@ const maxItemsPerPage = 10;
 // Format date
 const formatDate = (date) => new Date(date).toLocaleDateString();
 
+// Change the endpoint for fetching events
 const fetchEvents = async () => {
   try {
     const { data } = await axios.get("/api/events", {
@@ -188,38 +189,14 @@ const fetchEvents = async () => {
   }
 };
 
-const fetchUsers = async () => {
-  try {
-    const { data } = await axios.get("/api/users", {
-      params: { search: userSearch.value, page: currentPage.value, per_page: maxItemsPerPage },
-    });
-    users.value = data.users || [];
-    totalPages.value = Math.ceil((data.total || 0) / maxItemsPerPage);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    users.value = [];
-    totalPages.value = 1;
-  }
-};
-
-// Fetch attendees
+// Change the endpoint for fetching attendees
 const fetchAttendees = async () => {
   if (!selectedEvent.value) return;
   const { data } = await axios.get(`/api/events/${selectedEvent.value.id}/attendees`);
   attendees.value = data.attendees;
 };
 
-// Drag events
-const dragUserStart = (user, event) => {
-  draggedUser.value = user;
-  event.dataTransfer.setData("text/plain", user.id);
-};
-
-const dragUserToTrash = (user, event) => {
-  draggedUser.value = user;
-  event.dataTransfer.setData("text/plain", user.id);
-};
-
+// Change the endpoint for adding an attendee
 const dropUser = async (event) => {
   event.preventDefault();
   if (!draggedUser.value || !selectedEvent.value) return;
@@ -247,6 +224,7 @@ const dropUser = async (event) => {
   }
 };
 
+// Change the endpoint for removing an attendee
 const removeUserFromEvent = async (event) => {
   event.preventDefault();
   if (draggedUser.value && selectedEvent.value) {

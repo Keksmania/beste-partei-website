@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
-@section('title', $event->name)
+@section('title', $post->name)
 
 @section('content')
 <div class="container mt-5 slide-down">
-    <div class="mb-3">{{ $event->date }}</div>
-    <h3>{{ $event->name }}</h3>
+    <div class="mb-3">{{ $post->date }}</div>
+    <h3>{{ $post->name }}</h3>
     <img 
         style="max-width: 20em; min-width: 20em" 
-        src="{{ $event->image ? asset('storage/' . $event->image) : url('/images/1.jpg') }}" 
+        src="{{ $post->image ? asset('storage/' . $post->image) : url('/images/1.jpg') }}" 
         alt="Image">
-    <div class="mt-3">{!! $event->description !!}</div>
+    <div class="mt-3">{!! $post->description !!}</div>
 </div>
 @endsection
