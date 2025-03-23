@@ -26,54 +26,92 @@ class ContentController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request)
-    {
-        $search = $request->query('search', '');
-        $page = $request->query('page', 1);
-        $limit = $request->query('limit', 10); // Limit per page
-        $year = $request->query('year', null);
-        $month = $request->query('month', null);
-    
-        $eventsQuery = Event::with('post'); // Ensure the post relationship is eager-loaded
-    
-        if ($search) {
-            $eventsQuery->whereHas('post', function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            });
-        }
-        if ($year) {
-            $eventsQuery->whereYear('date', $year);
-        }
-        if ($month) {
-            $eventsQuery->whereMonth('date', $month);
-        }
-    
-        $total = $eventsQuery->count();
-        $events = $eventsQuery->orderBy('date', 'desc')
-            ->offset(($page - 1) * $limit)
-            ->limit($limit)
-            ->get();
-    
-        // Transform events to include the image URL
-        $eventsTransformed = $events->map(function ($event) {
-           if(isset($event->post)){
-            return [
-                'id' => $event->post_id,
-                'name' => $event->post->name,
-                'date' => $event->date,
-                'image' => $event->post->thumbnail
-                    ? asset($event->post->thumbnail)
-                    : url('/images/1.jpg'), // Placeholder image
-            ];}
-        });
-    
-        return response()->json([
-            'events' => $eventsTransformed,
-            'current_page' => $page,
-            'total' => $total,
-        ]);
-    }
-    
+
+     public function index(Request $request)
+     {
+         $search = $request->query('search', '');
+         $page = $request->query('page', 1);
+         $limit = $request->query('limit', 10); // Limit per page
+         $year = $request->query('year', null);
+         $month = $request->query('month', null);
+         $isEvents = $request->query('events', 'false') === 'true';
+     
+         if ($isEvents) {
+             $eventsQuery = Event::with('post'); // Ensure the post relationship is eager-loaded
+     
+             if ($search) {
+                 $eventsQuery->whereHas('post', function ($query) use ($search) {
+                     $query->where('name', 'like', '%' . $search . '%');
+                 });
+             }
+             if ($year) {
+                 $eventsQuery->whereYear('date', $year);
+             }
+             if ($month) {
+                 $eventsQuery->whereMonth('date', $month);
+             }
+     
+             $total = $eventsQuery->count();
+             $events = $eventsQuery->orderBy('date', 'desc')
+                 ->offset(($page - 1) * $limit)
+                 ->limit($limit)
+                 ->get();
+     
+             // Transform events to include the image URL
+             $eventsTransformed = $events->map(function ($event) {
+                 $post = $event->post;
+
+                 if ($post) {
+                     return [
+                         'id' => $event->post_id,
+                         'name' => $post->name,
+                         'date' => $event->date,
+                         'image' => $post->thumbnail
+                             ? asset($post->thumbnail)
+                             : url('/images/1.jpg'), // Placeholder image
+                     ];
+                 }
+                 
+                 return null;
+             })->filter();
+     
+             return response()->json([
+                 'events' => $eventsTransformed,
+                 'current_page' => $page,
+                 'total' => $total,
+             ]);
+         } else {
+             $postsQuery = Post::query(); // Query posts directly
+     
+             if ($search) {
+                 $postsQuery->where('name', 'like', '%' . $search . '%');
+             }
+     
+             $total = $postsQuery->count();
+             $posts = $postsQuery->orderBy('created_at', 'desc')
+                 ->offset(($page - 1) * $limit)
+                 ->limit($limit)
+                 ->get();
+     
+             // Transform posts to include event-related data if the post is an event
+             $postsTransformed = $posts->map(function ($post) {
+                 $event = Event::where('post_id', $post->id)->first();
+                 return [
+                     'id' => $post->id,
+                     'name' => $post->name,
+                     'date' => $event ? $event->date : $post->created_at->format('Y-m-d'),
+                     'is_event' => $event ? true : false,
+                     'event_id' => $event ? $event->id : null,
+                 ];
+             });
+     
+             return response()->json([
+                 'posts' => $postsTransformed,
+                 'current_page' => $page,
+                 'total' => $total,
+             ]);
+         }
+     }
 
     public function getPostCount(Request $request){
         $year = $request->query('year', null);
@@ -131,8 +169,14 @@ class ContentController extends Controller
 
     public function getPostApi(Request $request)
     {
-        $post = Post::with('event')->where("id", $request->route("id"))->first();
+        $post = Post::where("id", $request->route("id"))->first();
         if ($post) {
+            // Fetch the event associated with the post
+            $event = Event::where('post_id', $request->route("id"))->first();
+     
+            // Determine the date to use
+            $post->is_event = $event ? true : false;
+            $post->date = $event ? $event->date : $post->created_at;
             return response()->json(["post" => $post]);
         } else {
             abort(403, "Post not found!");
@@ -153,13 +197,13 @@ class ContentController extends Controller
      
      public function store(Request $request)
      {
-         $request->validate([
-             'name' => 'required|string|max:255',
-             'date' => 'required_if:is_event,true|date',
-             'description' => 'required|string',
-             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-             'is_event' => 'nullable|boolean',
-         ]);
+            $data = $request->validate([
+            'name'      => 'required|string|max:255',
+            'description'=> 'required|string',
+            'is_event'  => 'required|boolean',
+            'date'      => 'required_if:is_event,true|nullable|date',
+            'image'     => 'nullable|image|max:2048',
+        ]);
      
          $imagePath = null;
          $thumbnailPath = null;
@@ -282,7 +326,7 @@ class ContentController extends Controller
              'image' => $imagePath,
              'thumbnail' => $thumbnailPath,
          ]);
-     
+
          if ($request->is_event) {
              // Generate a unique key for the event
              $key = Str::uuid();
@@ -351,15 +395,15 @@ class ContentController extends Controller
         public function update(Request $request, $id)
 {
     $request->validate([
-        'name' => 'required|string|max:255',
-        'date' => 'required_if:is_event,true|date',
-        'description' => 'required|string',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        'is_event' => 'nullable|boolean',
+        'name'      => 'required|string|max:255',
+        'description'=> 'required|string',
+        'is_event'  => 'required|boolean',
+        'date'      => 'required_if:is_event,true|nullable|date',
+        'image'     => 'nullable|image|max:2048',
     ]);
 
     $post = Post::findOrFail($id);
-    $event = $post->event;
+    $event = Event::where('post_id', $post->id)->first();
 
     $imagePath = $post->image;
     $thumbnailPath = $post->thumbnail;
@@ -514,32 +558,35 @@ class ContentController extends Controller
      */
     public function destroy($id)
     {
-        $event = Event::findOrFail($id);
+        $post = Post::findOrFail($id);
+        $event = Event::where('post_id', $post->id)->first();
 
-        if ($event->image && $event->image !== 'images/1.jpg') {
-            if (Storage::disk('public')->exists($event->image)) {
-                Storage::disk('public')->delete($event->image);
-            }
+        // Delete associated event if it exists
+        if ($event) {
+            $event->delete();
         }
 
-        if ($event->thumbnail && $event->thumbnail !== 'images/1.jpg') {
-            if (Storage::disk('public')->exists($event->thumbnail)) {
-                Storage::disk('public')->delete($event->thumbnail);
-            }
+        // Delete the post's image and thumbnail if they exist
+        if ($post->image && Storage::disk('public')->exists($post->image)) {
+            Storage::disk('public')->delete($post->image);
+        }
+        if ($post->thumbnail && Storage::disk('public')->exists($post->thumbnail)) {
+            Storage::disk('public')->delete($post->thumbnail);
         }
 
-        $event->delete();
+        // Delete the post
+        $post->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Event deleted successfully!',
+            'message' => 'Post and associated event deleted successfully!',
         ]);
     }
 
-    public function markAttendance(Request $request, $eventId)
+    public function markAttendance(Request $request, $postId)
 {
     $userId = $request->input('user_id');
-    $event = Event::findOrFail($eventId);
+    $event = Event::with('users:id,name,email')->where('post_id', $postId)->firstOrFail();
 
     // Check if the user is already marked as attending
     $alreadyAttending = DB::table('event_user')
@@ -616,10 +663,10 @@ class ContentController extends Controller
  * @param int $eventId
  * @return \Illuminate\Http\JsonResponse
  */
-public function removeAttendance(Request $request, $eventId)
+public function removeAttendance(Request $request, $postId)
 {
     $userId = $request->input('user_id');
-    $event = Event::findOrFail($eventId);
+    $event = Event::with('users:id,name,email')->where('post_id', $postId)->firstOrFail();
 
     // Detach the user from the event
     $event->users()->detach($userId);
@@ -636,9 +683,10 @@ public function removeAttendance(Request $request, $eventId)
  * @param int $eventId
  * @return \Illuminate\Http\JsonResponse
  */
-public function getAttendees($eventId)
+public function getAttendees($postId)
 {
-    $event = Event::with('users:id,name,email')->findOrFail($eventId);
+
+    $event = Event::with('users:id,name,email')->where('post_id', $postId)->firstOrFail();
 
     $event->users->transform(function ($user) {
         $user->email = Crypt::decryptString($user->email);

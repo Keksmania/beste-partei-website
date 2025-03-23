@@ -31,13 +31,14 @@
         <img v-if="thumbnailSrc" :src="thumbnailSrc" alt="Thumbnail" class="img-thumbnail mt-3" style="max-height: 200px;">
       </div>
 
-      <div class="mb-3">
+      <div class="form-check mb-3">
         <input
+          class="form-check-input"
           type="checkbox"
           id="isEvent"
           v-model="isEvent"
         />
-        <label for="isEvent" class="form-label">Is this an event?</label>
+        <label for="isEvent" class="form-check-label">Is this an event?</label>
       </div>
 
       <div class="mb-3" v-if="isEvent">
@@ -78,6 +79,7 @@ const editor = ref(null);
 const image = ref(null);
 const thumbnailSrc = ref(null);
 const isEvent = ref(false);
+const wasEvent = ref(false); // Track if the post was an event
 
 // Base URL of the website
 const baseURL = ref(`${window.location.origin}/`);
@@ -122,9 +124,10 @@ const fetchPost = async () => {
     postName.value = post.name;
     setEditorContent(post.description);
     thumbnailSrc.value = post.thumbnail ? `${baseURL.value}${post.thumbnail}` : `${baseURL.value}images/1.jpg`; // Use thumbnail field
-    if (post.event) {
+    if (post.is_event) {
       isEvent.value = true;
-      eventDate.value = post.event.date;
+      wasEvent.value = true; // Track that the post was an event
+      eventDate.value = post.date;
     }
   } catch (error) {
     errorMessage.value = 'Error fetching post details';
@@ -135,44 +138,60 @@ const fetchPost = async () => {
 // Create or update post function
 const savePost = async () => {
   const description = getEditorContent();
-  const imageFile = image.value?.files[0];
 
-  if (!postName.value || !description || (isEvent.value && !eventDate.value)) {
-    errorMessage.value = 'All fields are required except the image.';
+  // Simple validation
+  if (!postName.value || !description) {
+    errorMessage.value = 'Name and description are required.';
     setTimeout(() => (errorMessage.value = ''), 3500);
     return;
   }
 
-  const formData = new FormData();
+  if (isEvent.value && !eventDate.value) {
+    errorMessage.value = 'Event date is required when creating an event.';
+    setTimeout(() => (errorMessage.value = ''), 3500);
+    return;
+  }
+
+  // Build a FormData payload for file uploads
+  let formData = new FormData();
   formData.append('name', postName.value);
   formData.append('description', description);
-  if (imageFile) {
-    formData.append('image', imageFile);
-  }
-  formData.append('is_event', isEvent.value);
+  formData.append('is_event', isEvent.value ? 1 : 0);  // use string for boolean
   if (isEvent.value) {
     formData.append('date', eventDate.value);
   }
   formData.append('_token', csrfToken.value);
 
+  // Append image file if available
+  if (image.value && image.value.files[0]) {
+    formData.append('image', image.value.files[0]);
+  }
+
   try {
     let response;
     if (props.isEditMode) {
-      response = await axios.post(`/api/posts/${props.postId}`, formData);
+      response = await axios.post(`/api/posts/${props.postId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       successMessage.value = 'Post updated successfully!';
     } else {
-      response = await axios.post('/api/posts', formData);
+      response = await axios.post('/api/posts', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       successMessage.value = 'Post created successfully!';
     }
     setTimeout(() => (successMessage.value = ''), 3500);
 
-    // Reset form
+    // Reset the form fields
     postName.value = '';
     eventDate.value = '';
     setEditorContent('');
-    image.value.value = '';
+    if (image.value) {
+      image.value.value = '';
+    }
     thumbnailSrc.value = null;
     isEvent.value = false;
+    wasEvent.value = false; // Reset the wasEvent flag
   } catch (error) {
     errorMessage.value = error.response?.data?.message || 'An error occurred while saving the post.';
     setTimeout(() => (errorMessage.value = ''), 3500);

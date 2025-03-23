@@ -4,7 +4,7 @@
 
 @section('content')
 <div  class="container mt-5 slide-down child">
-<list-events></list-events>
+<list-posts></list-posts>
 </div>
 
 @endsection

@@ -1,32 +1,32 @@
 <template>
   <div class="container mt-4">
-    <h2>Events verwalten</h2>
+    <h2>Posts verwalten</h2>
     <div class="row">
-      <!-- Event List -->
+      <!-- Post List -->
       <div class="col-md-12">
         <input
           type="text"
           class="form-control mb-3"
           v-model="searchQuery"
-          placeholder="Events suchen..."
+          placeholder="Posts suchen..."
           @input="onSearchInput"
         />
         <table class="table table-striped table-responsive">
           <thead>
             <tr>
-              <th scope="col">Event Name</th>
-              <th scope="col">Event Datum</th>
+              <th scope="col">Post Name</th>
+              <th scope="col">Datum</th>
               <th scope="col">Aktionen</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="event in events" :key="event.id">
-              <td>{{ event.name }}</td>
-              <td>{{ event.date }}</td>
+            <tr v-for="post in posts" :key="post.id">
+              <td>{{ post.name }}</td>
+              <td>{{ post.date }}</td>
               <td>
-                <button @click="editEvent(event.id)" class="btn btn-sm btn-secondary">Bearbeiten</button>
-                <button @click="confirmDelete(event.id)" class="btn btn-sm btn-danger">Löschen</button>
-                <button @click="downloadQrCode(event.id)" class="btn btn-sm btn-primary">QR Code</button>
+                <button @click="editPost(post.id)" class="btn btn-sm btn-secondary">Bearbeiten</button>
+                <button @click="confirmDelete(post.id)" class="btn btn-sm btn-danger">Löschen</button>
+                <button v-if="post.is_event" @click="downloadQrCode(post.event_id)" class="btn btn-sm btn-primary">QR Code</button>
               </td>
             </tr>
           </tbody>
@@ -60,40 +60,41 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 
 const searchQuery = ref('');
-const events = ref([]);
+const posts = ref([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const maxItemsPerPage = 10;
 
-// Fetch events from the API
-const fetchEvents = async () => {
-  const response = await axios.get('/api/events', {
+// Fetch posts from the API
+const fetchPosts = async () => {
+  const response = await axios.get('/api/posts', {
     params: { 
       search: searchQuery.value,
       page: currentPage.value,
-      per_page: maxItemsPerPage
+      per_page: maxItemsPerPage,
+      events: false // Set to true if you want to fetch events instead
     }
   });
-  events.value = response.data.events;
+  posts.value = response.data.posts;
   totalPages.value = Math.ceil(response.data.total / maxItemsPerPage);
 };
 
 // Handle search input
 const onSearchInput = () => {
   currentPage.value = 1;
-  fetchEvents();
+  fetchPosts();
 };
 
-// Edit event
-const editEvent = (eventId) => {
-  window.location.href = `/edit-event/${eventId}`;
+// Edit post
+const editPost = (postId) => {
+  window.location.href = `/edit-post/${postId}`;
 };
 
-// Confirm delete event
-const confirmDelete = (eventId) => {
+// Confirm delete post
+const confirmDelete = (postId) => {
   Swal.fire({
     title: 'Sind Sie sicher?',
-    text: 'Möchten Sie dieses Event wirklich löschen?',
+    text: 'Möchten Sie diesen Post wirklich löschen?',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#3085d6',
@@ -102,15 +103,15 @@ const confirmDelete = (eventId) => {
     cancelButtonText: 'Abbrechen'
   }).then((result) => {
     if (result.isConfirmed) {
-      deleteEvent(eventId);
+      deletePost(postId);
     }
   });
 };
 
-// Delete event
-const deleteEvent = async (eventId) => {
-  await axios.delete(`/api/events/${eventId}`);
-  fetchEvents();
+// Delete post
+const deletePost = async (postId) => {
+  await axios.delete(`/api/posts/${postId}`);
+  fetchPosts();
 };
 
 // Download QR code
@@ -122,7 +123,7 @@ const downloadQrCode = (eventId) => {
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
-    fetchEvents();
+    fetchPosts();
   }
 };
 
@@ -143,8 +144,8 @@ const pagesToShow = (totalPages, currentPage) => {
   return pages;
 };
 
-// Fetch events on component mount
-fetchEvents();
+// Fetch posts on component mount
+fetchPosts();
 </script>
 
 <style>
@@ -164,4 +165,3 @@ fetchEvents();
   margin-right: 3px;
 }
 </style>
-

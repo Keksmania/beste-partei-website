@@ -123,12 +123,14 @@ const fetchEvents = async (reset = true) => {
     currentPage.value = 1;
   }
 
-  const response = await axios.get('/api/events', {
+  const response = await axios.get('/api/posts', {
     params: { 
       page: currentPage.value, 
       limit: limit,
       year: selectedYear.value || null,
-      month: selectedMonth.value || null
+      month: selectedMonth.value || null,
+      events: true
+      
     }
   });
 

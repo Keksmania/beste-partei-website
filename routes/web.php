@@ -196,10 +196,10 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-Route::get('/list-events', function (Request $request) {
+Route::get('/list-posts', function (Request $request) {
     $user = Auth::user();
     if ($user && $user->hasPermission('posten')) {
-        return view('list-events');
+        return view('list-posts');
     }
     abort(403, 'Unauthorized');
 });
@@ -211,17 +211,17 @@ Route::get('/events/{eventId}/download-qrcode', function ($eventId) {
     }
 })->name('events.downloadQrCode');
 
-Route::get('/edit-event/{id}', function ($id) {
+Route::get('/edit-post/{id}', function ($id) {
     $user = Auth::user();
     if ($user && $user->hasPermission('posten')) {
-        return view('edit-event', ['eventId' => $id]);
+        return view('edit-post', ['postId' => $id]);
     }
     abort(403, 'Unauthorized');
 });
 
 Route::prefix('api')->group(function () {
-    Route::get('/events', [ContentController::class, 'index']);
-    Route::get('/events/{id}', [ContentController::class, 'getPostApi']);
+    Route::get('/posts', [ContentController::class, 'index']);
+    Route::get('/posts/{id}', [ContentController::class, 'getPostApi']);
     Route::get('/events/filter/count', [ContentController::class, 'getPostCount']);
 
     // Throttled routes

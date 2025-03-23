@@ -16,8 +16,8 @@ class Post extends Model
         'thumbnail',
     ];
 
-    public function events()
+    public function event()
     {
-        return $this->hasMany(Event::class);
+        return $this->hasOne(Event::class);
     }
 }

@@ -41,8 +41,8 @@
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item {{ Auth::user()->hasPermission('posten') ? '' : 'disabled' }}" href="{{ url('/list-events') }}">
-                                Events verwalten
+                            <a class="dropdown-item {{ Auth::user()->hasPermission('posten') ? '' : 'disabled' }}" href="{{ url('/list-posts') }}">
+                                Posts verwalten
                             </a>
                         </li>
                         <li>

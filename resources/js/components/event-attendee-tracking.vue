@@ -20,7 +20,7 @@
             :class="{ 'active': event.id === selectedEvent?.id }"
             @click="selectEvent(event)"
           >
-            {{ event.post.name }} ({{ formatDate(event.date) }})
+            {{ event.name }} ({{ formatDate(event.date) }})
           </div>
         </div>
         <!-- Pagination -->
@@ -93,7 +93,7 @@
       <div class="col-md-4 mb-3 d-flex flex-column">
         <!-- Attendee List -->
         <div class="flex-grow-1">
-          <h5>Anwesenheit für "{{ selectedEvent?.post.name || 'No Event Selected' }}"</h5>
+          <h5>Anwesenheit für "{{ selectedEvent?.name || 'No Event Selected' }}"</h5>
           <input
           type="text"
           class="form-control mb-3"
@@ -167,11 +167,11 @@ const maxItemsPerPage = 10;
 // Format date
 const formatDate = (date) => new Date(date).toLocaleDateString();
 
-// Change the endpoint for fetching events
+// Fetch events
 const fetchEvents = async () => {
   try {
-    const { data } = await axios.get("/api/events", {
-      params: { search: eventSearch.value, page: eventCurrentPage.value, per_page: maxItemsPerPage },
+    const { data } = await axios.get("/api/posts", {
+      params: { search: eventSearch.value, page: eventCurrentPage.value, per_page: maxItemsPerPage, events: true },
     });
     events.value = data.events || [];
     eventTotalPages.value = Math.ceil((data.total || 0) / maxItemsPerPage);
@@ -189,14 +189,29 @@ const fetchEvents = async () => {
   }
 };
 
-// Change the endpoint for fetching attendees
+// Fetch attendees
 const fetchAttendees = async () => {
   if (!selectedEvent.value) return;
   const { data } = await axios.get(`/api/events/${selectedEvent.value.id}/attendees`);
   attendees.value = data.attendees;
 };
 
-// Change the endpoint for adding an attendee
+// Fetch users
+const fetchUsers = async () => {
+  try {
+    const { data } = await axios.get("/api/users", {
+      params: { search: userSearch.value, page: currentPage.value, per_page: maxItemsPerPage },
+    });
+    users.value = data.users || [];
+    totalPages.value = Math.ceil((data.total || 0) / maxItemsPerPage);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    users.value = [];
+    totalPages.value = 1;
+  }
+};
+
+// Add an attendee
 const dropUser = async (event) => {
   event.preventDefault();
   if (!draggedUser.value || !selectedEvent.value) return;
@@ -224,7 +239,7 @@ const dropUser = async (event) => {
   }
 };
 
-// Change the endpoint for removing an attendee
+// Remove an attendee
 const removeUserFromEvent = async (event) => {
   event.preventDefault();
   if (draggedUser.value && selectedEvent.value) {
@@ -236,12 +251,21 @@ const removeUserFromEvent = async (event) => {
   draggedUser.value = null;
 };
 
+// Drag user start
+const dragUserStart = (user, event) => {
+  draggedUser.value = user;
+};
+
+// Drag user to trash
+const dragUserToTrash = (user, event) => {
+  draggedUser.value = user;
+};
+
 // Pagination handlers
 const goToEventPage = (page) => {
   if (page >= 1 && page <= eventTotalPages.value) {
     eventCurrentPage.value = page;
-    console.log("test");
-        fetchEvents();
+    fetchEvents();
   }
 };
 
