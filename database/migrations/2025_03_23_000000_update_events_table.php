@@ -13,8 +13,14 @@ class UpdateEventsTable extends Migration
     public function up()
     {
         Schema::table('events', function (Blueprint $table) {
-            // Add a unique constraint to the post_id column
-            $table->foreignId('post_id')->unique()->constrained()->onDelete('cascade');
+            // Check if the post_id column already exists
+            if (!Schema::hasColumn('events', 'post_id')) {
+                // Add the post_id column with a unique constraint
+                $table->foreignId('post_id')->unique()->constrained()->onDelete('cascade');
+            } else {
+                // Add the unique constraint to the existing post_id column
+                $table->unique('post_id');
+            }
         });
     }
 
