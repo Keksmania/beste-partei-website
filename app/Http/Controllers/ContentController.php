@@ -113,43 +113,49 @@ class ContentController extends Controller
          }
      }
 
-    public function getPostCount(Request $request)
-    {
-        $year = $request->query('year', null);
-        $month = $request->query('month', null);
-        $countPosts = $request->query('post', 'false') === 'true';
-        $countEvents = $request->query('event', 'false') === 'true';
-
-        // Start the query on the posts table
-        $postsQuery = Post::query();
-
-        // Apply year filter if provided
-        if ($year) {
-            $postsQuery->whereYear('created_at', $year);
-        }
-
-        // Apply month filter if provided
-        if ($month) {
-            $postsQuery->whereMonth('created_at', $month);
-        }
-
-        if ($countPosts && !$countEvents) {
-            // Count only posts that are not events
-            $totalPosts = $postsQuery->whereDoesntHave('event')->count();
-        } elseif (!$countPosts && $countEvents) {
-            // Count only posts that are events
-            $totalPosts = $postsQuery->whereHas('event')->count();
-        } else {
-            // Count all posts
-            $totalPosts = $postsQuery->count();
-        }
-
-        // Return the total count as a JSON response
-        return response()->json([
-            'total' => $totalPosts
-        ]);
-    }
-
+     public function getPostCount(Request $request)
+     {
+         $year = $request->query('year', null);
+         $month = $request->query('month', null);
+         $countPosts = $request->query('post', 'false') === 'true';
+         $countEvents = $request->query('event', 'false') === 'true';
+     
+         if ($countEvents && !$countPosts) {
+             // Count only events using the event's date instead of the post's created_at
+             $eventsQuery = Event::query();
+             if ($year) {
+                 $eventsQuery->whereYear('date', $year);
+             }
+             if ($month) {
+                 $eventsQuery->whereMonth('date', $month);
+             }
+             $total = $eventsQuery->count();
+         } elseif ($countPosts && !$countEvents) {
+             // Count only posts that are not events using the post's created_at date
+             $postsQuery = Post::query();
+             if ($year) {
+                 $postsQuery->whereYear('created_at', $year);
+             }
+             if ($month) {
+                 $postsQuery->whereMonth('created_at', $month);
+             }
+             $total = $postsQuery->whereDoesntHave('event')->count();
+         } else {
+             // If both parameters are true or both are false, count all posts using created_at filter
+             $postsQuery = Post::query();
+             if ($year) {
+                 $postsQuery->whereYear('created_at', $year);
+             }
+             if ($month) {
+                 $postsQuery->whereMonth('created_at', $month);
+             }
+             $total = $postsQuery->count();
+         }
+     
+         return response()->json([
+             'total' => $total
+         ]);
+     }
 
     /**
      * Handle the request for a specific post.
