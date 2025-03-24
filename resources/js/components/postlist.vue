@@ -34,23 +34,28 @@
   </div>
 
   <!-- Carousel -->
-  <div style="display:flex; width: 100%; flex-direction: column; min-height: 16em; max-width: 80%; overflow: hidden; margin-left: 10%;">
+  <div 
+    style="display:flex; width: 100%; flex-direction: column; min-height: 16em; max-width: 100%; overflow: hidden;"
+    @touchstart="handleTouchStart"
+    @touchmove="handleTouchMove"
+    @touchend="handleTouchEnd"
+  >
     <div class="event-container" :style="{ transform: `translateX(${-position}em)` }">
       <a 
-        v-for="event in events" 
-        :key="event.id" 
+        v-for="post in posts" 
+        :key="post.id" 
         class="event-box" 
-        :href="'/post/' + event.id"
+        :href="'/post/' + post.id"
         :class="{ 
-          'future-event': new Date(event.date) > new Date(),
-          'today-event': new Date(event.date).toDateString() === new Date().toDateString() 
+          'future-event': new Date(post.date) > new Date(),
+          'today-event': new Date(post.date).toDateString() === new Date().toDateString() 
         }"
       >
         <div class="event-image">
-          <img :src="event.image ? event.image : '/images/1.jpg'" alt="Image">
-          <div class="event-date">{{ new Date(event.date).toLocaleDateString() }}</div>
+          <img :src="post.image ? post.image : '/images/1.jpg'" alt="Image">
+          <div class="event-date">{{ new Date(post.date).toLocaleDateString() }}</div>
         </div>
-        <div class="event-name"><h5>{{ event.name }}</h5></div>
+        <div class="event-name"><h5>{{ post.name }}</h5></div>
       </a>
     </div>
     <div style="display: flex; flex-direction: row; justify-content: space-between; margin-top: -8em;">
@@ -67,14 +72,19 @@ import axios from 'axios';
 // Include SweetAlert
 import Swal from 'sweetalert2';
 
+// Props
+const props = defineProps({
+  event: Boolean
+});
+
 // State variables
-const events = ref([]);
+const posts = ref([]);
 const position = ref(0);
 const currentPage = ref(1);
 const limit = 20;
-const totalEvents = ref(0);
+const totalPosts = ref(0);
 
-// Filters and event counts
+// Filters and post counts
 const selectedYear = ref('');
 const selectedMonth = ref('');
 const availableYears = ref([]);
@@ -85,40 +95,45 @@ const months = [
 const yearCounts = ref({}); // { 2024: 23, 2023: 17, ... }
 const monthCounts = ref({}); // { 1: 3, 2: 5, ... }
 
+// Touch event variables
+let touchStartX = 0;
+let touchEndX = 0;
+
 // Generate available years dynamically
 const generateYears = async () => {
   const currentYear = new Date().getFullYear();
-  for (let year = currentYear; year >= 2000; year--) {
+  for (let year = currentYear; year >= 2024; year--) {
     availableYears.value.push(year);
   }
   await fetchYearCounts();
 };
 
-// Fetch total events per year
+// Fetch total posts per year
 const fetchYearCounts = async () => {
   for (let year of availableYears.value) {
-    const response = await axios.get('/api/events/filter/count', {
-      params: { year }
+    const response = await axios.get('/api/posts/filter/count', {
+      params: { year,event: props.event ? 'true' : 'false', post:  (!props.event) ? 'true' : 'false' }
     });
     yearCounts.value[year] = response.data.total || 0;
   }
 };
 
-// Fetch total events per month for a specific year
+// Fetch total posts per month for a specific year
 const fetchMonthCounts = async (year) => {
   monthCounts.value = {};
   for (let month = 1; month <= 12; month++) {
-    const response = await axios.get('/api/events/filter/count', {
-      params: { year, month }
+    const response = await axios.get('/api/posts/filter/count', {
+      params: { year, month, event: props.event ? 'true' : 'false', post:  (!props.event) ? 'true' : 'false' }
     });
     monthCounts.value[month] = response.data.total || 0;
   }
 };
 
-// Fetch events
-const fetchEvents = async (reset = true) => {
+// Fetch posts
+// Fetch posts
+const fetchPosts = async (reset = true) => {
   if (reset) {
-    events.value = [];
+    posts.value = [];
     position.value = 0;
     currentPage.value = 1;
   }
@@ -129,15 +144,21 @@ const fetchEvents = async (reset = true) => {
       limit: limit,
       year: selectedYear.value || null,
       month: selectedMonth.value || null,
-      events: true
-      
+      events: props.event
     }
   });
 
-  const loadedEvents = response.data.events.filter(event => event !== null);
+  let loadedPosts = [];
+  if (props.event) {
+    loadedPosts = response.data.events ? response.data.events.filter(post => post !== null) : [];
+  } else {
+    loadedPosts = response.data.posts ? response.data.posts.filter(post => post !== null) : [];
+    // Skip posts that have is_event true when event prop is false
+    loadedPosts = loadedPosts.filter(post => !post.is_event);
+  }
 
-  events.value.push(...loadedEvents);
-  totalEvents.value = response.data.total;
+  posts.value.push(...loadedPosts);
+  totalPosts.value = response.data.total;
 };
 
 // Apply filters
@@ -147,7 +168,7 @@ const applyFilters = async () => {
   } else {
     monthCounts.value = {};
   }
-  fetchEvents(true);
+  fetchPosts(true);
 };
 
 // Reset filters
@@ -155,7 +176,7 @@ const resetFilters = () => {
   selectedYear.value = '';
   selectedMonth.value = '';
   monthCounts.value = {};
-  fetchEvents(true);
+  fetchPosts(true);
 };
 
 // Navigation
@@ -165,14 +186,32 @@ const moveLeft = () => {
 };
 
 const moveRight = async () => {
-  if (position.value / 16 < events.value.length) {
+  if (position.value / 16 < posts.value.length) {
     position.value += 16;
   } else {
-    if (currentPage.value * limit < totalEvents.value) {
+    if (currentPage.value * limit < totalPosts.value) {
       currentPage.value += 1;
-      await fetchEvents(false);
+      await fetchPosts(false);
       position.value += 16;
     }
+  }
+};
+
+// Touch event handlers
+const handleTouchStart = (event) => {
+  touchStartX = event.changedTouches[0].screenX;
+};
+
+const handleTouchMove = (event) => {
+  touchEndX = event.changedTouches[0].screenX;
+};
+
+const handleTouchEnd = () => {
+  if (touchEndX < touchStartX) {
+    moveRight();
+  }
+  if (touchEndX > touchStartX) {
+    moveLeft();
   }
 };
 
@@ -206,18 +245,12 @@ if (params.result) {
 // Lifecycle hooks
 onMounted(() => {
   generateYears();
-  fetchEvents();
+  fetchPosts();
 });
 </script>
 
 <style scoped>
-.filter-dropdown {
-  padding: 0.5em;
-  font-size: 1em;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  cursor: pointer;
-}
+
 
 .btn {
   padding: 0.5em 1em;

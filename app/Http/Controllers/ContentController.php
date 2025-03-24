@@ -60,7 +60,7 @@ class ContentController extends Controller
              // Transform events to include the image URL
              $eventsTransformed = $events->map(function ($event) {
                  $post = $event->post;
-
+     
                  if ($post) {
                      return [
                          'id' => $event->post_id,
@@ -113,29 +113,40 @@ class ContentController extends Controller
          }
      }
 
-    public function getPostCount(Request $request){
+    public function getPostCount(Request $request)
+    {
         $year = $request->query('year', null);
         $month = $request->query('month', null);
-    
-        // Start the query on the events table
-        $eventsQuery = DB::table('events'); 
-    
+        $countPosts = $request->query('post', 'false') === 'true';
+        $countEvents = $request->query('event', 'false') === 'true';
+
+        // Start the query on the posts table
+        $postsQuery = Post::query();
+
         // Apply year filter if provided
         if ($year) {
-            $eventsQuery->whereYear('date', $year);
+            $postsQuery->whereYear('created_at', $year);
         }
-    
+
         // Apply month filter if provided
         if ($month) {
-            $eventsQuery->whereMonth('date', $month);
+            $postsQuery->whereMonth('created_at', $month);
         }
-    
-        // Count the events
-        $totalEvents = $eventsQuery->count();
-    
+
+        if ($countPosts && !$countEvents) {
+            // Count only posts that are not events
+            $totalPosts = $postsQuery->whereDoesntHave('event')->count();
+        } elseif (!$countPosts && $countEvents) {
+            // Count only posts that are events
+            $totalPosts = $postsQuery->whereHas('event')->count();
+        } else {
+            // Count all posts
+            $totalPosts = $postsQuery->count();
+        }
+
         // Return the total count as a JSON response
         return response()->json([
-            'total' => $totalEvents
+            'total' => $totalPosts
         ]);
     }
 

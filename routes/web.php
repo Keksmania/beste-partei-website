@@ -222,7 +222,7 @@ Route::get('/edit-post/{id}', function ($id) {
 Route::prefix('api')->group(function () {
     Route::get('/posts', [ContentController::class, 'index']);
     Route::get('/posts/{id}', [ContentController::class, 'getPostApi']);
-    Route::get('/events/filter/count', [ContentController::class, 'getPostCount']);
+    Route::get('/posts/filter/count', [ContentController::class, 'getPostCount']);
 
     // Throttled routes
     Route::middleware('throttle:10|10,1')->group(function () {

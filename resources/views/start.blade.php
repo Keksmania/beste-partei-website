@@ -8,7 +8,10 @@
         <p class="h1 m-3">Studentische Politik-Revolution</p>
         <div style="justify-content: center; display:block;">
             <div class="content-container">
-                <eventlist></eventlist>
+                <h3>Eventkalender</h3>
+                <postlist :event="true"></postlist>
+             <!--   <h3>Blog Posts</h3> -->
+            <!--    <postlist :event="false"></postlist> -->
                 <p>Aktuell ist diese Seite noch im Aufbau.</p>
             </div>
            

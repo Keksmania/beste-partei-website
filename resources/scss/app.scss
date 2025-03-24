@@ -79,7 +79,11 @@ footer {
   width: 100%;
 }
 
-
+h3{
+  color: rgba(var(--bs-primary-rgb));
+  padding: 5px;
+  padding-top: 20px;
+}
 
 
 .event-box {
@@ -283,3 +287,11 @@ h5 {
 }
 
 
+
+select{
+  border: none;
+}
+
+select:focus {
+  outline: none;
+}
